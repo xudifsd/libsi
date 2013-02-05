@@ -27,12 +27,11 @@ void to_dot(struct tree_node *cur) {
 
 int main(int argc, char *argv[]) {
 	/* run with `./t_tree 2> out.dot && dot -Tpng -o t.png out.dot` */
-	struct tree_root root;
+	struct tree_node *root = NULL;
 	int i;
 	struct symbol *sym[26];
 	struct number *num[26];
 	char template[] = "a";
-	memset(&root, 0, sizeof(struct tree_root));
 
 	for (i = 0; i < 26; i++) {
 		template[0] += i;
@@ -41,13 +40,15 @@ int main(int argc, char *argv[]) {
 		tree_insert(&root, sym[i], (struct exp *)num[i]);
 		template[0] = 'a';
 	}
-	fprintf(stderr, "digraph heaptree%d{\n", i);
-	traverse(root.node, to_dot);
+
+	fprintf(stderr, "digraph heaptree{\n");
+	traverse(root, to_dot);
 	fprintf(stderr, "}\n");
-	assert(((struct number *)tree_find(&root, "c"))->l_value == 100 + 'c' - 'a');
-	assert(((struct number *)tree_find(&root, "z"))->l_value == 100 + 'z' - 'a');
-	assert(((struct number *)tree_find(&root, "d"))->l_value == 100 + 'd' - 'a');
-	assert(((struct number *)tree_find(&root, "j"))->l_value == 100 + 'j' - 'a');
-	assert(((struct number *)tree_find(&root, "m"))->l_value == 100 + 'm' - 'a');
+
+	assert(((struct number *)tree_find(root, "c"))->l_value == 100 + 'c' - 'a');
+	assert(((struct number *)tree_find(root, "z"))->l_value == 100 + 'z' - 'a');
+	assert(((struct number *)tree_find(root, "d"))->l_value == 100 + 'd' - 'a');
+	assert(((struct number *)tree_find(root, "j"))->l_value == 100 + 'j' - 'a');
+	assert(((struct number *)tree_find(root, "m"))->l_value == 100 + 'm' - 'a');
 	exit(0);
 }

@@ -1,12 +1,13 @@
 #include "malloc.h"
 #include <assert.h>
 
-struct tree_node *alloc_tree_node(struct tree_node *parent, struct symbol *sym,
-		struct exp *e) {
+struct tree_node *alloc_tree_node(struct tree_node *parent, struct tree_node **pparent,
+		struct symbol *sym, struct exp *e) {
 	struct tree_node *rtn = (struct tree_node *)GC_MALLOC(sizeof(struct tree_node));
 	assert(rtn != NULL);
 	rtn->color = RED;	/* makes insert easier */
 	rtn->parent = parent;
+	rtn->pparent = pparent;
 	rtn->left = NULL;
 	rtn->right = NULL;
 	rtn->sym = sym;
