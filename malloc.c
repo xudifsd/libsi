@@ -1,6 +1,14 @@
 #include "malloc.h"
 #include <assert.h>
 
+struct envrion *alloc_envrion(struct envrion *parent) {
+	struct envrion *rtn = (struct envrion *)GC_MALLOC(sizeof(struct envrion));
+	assert(rtn);
+	rtn->parent = parent;
+	rtn->repo = NULL;
+	return rtn;
+}
+
 struct tree_node *alloc_tree_node(struct tree_node *parent, struct tree_node **pparent,
 		struct symbol *sym, struct exp *e) {
 	struct tree_node *rtn = (struct tree_node *)GC_MALLOC(sizeof(struct tree_node));

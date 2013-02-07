@@ -1,23 +1,12 @@
 #ifndef TYPES_H
 #define TYPES_H
 
-#include "stack.h"
-
-/* *
- * All the builtin functions and user functions that added directly
- * should have this prototype, which count contains the number of args
- * */
-
-enum rtn_type {SUCC, ERR_ARGC, ERR_TYPE};
-
-typedef enum rtn_type (*builtin_t)(unsigned long argc, struct list *argv, struct exp **rtn);
 
 #define NUMBER    (1<<0)
 #define SYMBOL    (1<<1)
 #define PAIR      (1<<2)
 #define CALLABLE  (1<<3)
 /* Maybe we will never support string type */
-
 
 struct exp {
 	unsigned long tag;
@@ -48,6 +37,15 @@ struct pair {
 };
 
 enum callable_type {BUILTIN, LAMBDA, MACRO};
+
+/* *
+ * All the builtin functions and user functions that added directly
+ * should have this prototype, which count contains the number of args
+ * */
+
+enum rtn_type {SUCC, ERR_ARGC, ERR_TYPE};
+
+typedef enum rtn_type (*builtin_t)(struct pair *args, struct exp **rtn);
 
 typedef struct lambda_s {
 	struct pair *args;

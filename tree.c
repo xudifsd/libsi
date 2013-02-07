@@ -97,7 +97,13 @@ struct exp *tree_find(struct tree_node *root, const char *str) {
 	return NULL;
 }
 
-void tree_insert(struct tree_node **root, struct symbol *sym, struct exp *e) {
+/* *
+ * return value: 0 if have inserted successfully, 1 if *failed* at insert
+ * if `replace' is
+ * 0: do not permit replacement
+ * 1: must replace, do not alloc new node, this is for set_in_env
+ */
+int tree_insert(struct tree_node **root, struct symbol *sym, struct exp *e, int replace) {
 	struct tree_node **cur;
 	struct tree_node *p;
 	struct tree_node *parent;
@@ -112,12 +118,17 @@ void tree_insert(struct tree_node **root, struct symbol *sym, struct exp *e) {
 			parent = p;
 			cur = &p->left;
 		} else {
-			/* overwrite */
-			p->value = e;
-			return;
+			if (replace) {
+				/* overwrite */
+				p->value = e;
+				return 0;
+			}
+			return 1;
 		}
 	}
+	if (replace)
+		return 1;
 	*cur = alloc_tree_node(parent, cur, sym, e);
 	insert_case1(*cur);
-	return;
+	return 0;
 }
