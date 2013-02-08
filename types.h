@@ -36,7 +36,11 @@ struct pair {
 	struct exp *cdr;
 };
 
-enum callable_type {BUILTIN, LAMBDA, MACRO};
+/* we should ensure head is a list instead of like (1 . 2) */
+#define for_pair(p, head) \
+	for ((p) = (head); (p); (p) = (struct pair *)(p)->cdr)
+
+enum callable_type {BUILTIN_SYNTAX, BUILTIN_PRO, LAMBDA, MACRO};
 
 /* *
  * All the builtin functions and user functions that added directly
@@ -71,6 +75,14 @@ struct callable {
 
 static inline int is_number(struct exp *var) {
 	return (var->tag & NUMBER);
+}
+
+static inline int is_long(struct number *num) {
+	return num->type == LONG;
+}
+
+static inline int is_double(struct number *num) {
+	return num->type == DOUBLE;
 }
 
 static inline int is_symbol(struct exp *var) {

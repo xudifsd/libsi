@@ -53,3 +53,12 @@ struct pair *alloc_pair(struct exp *car, struct exp *cdr) {
 	rtn->cdr = cdr;
 	return rtn;
 }
+
+struct stack_frame *alloc_stack(struct stack_frame *prev) {
+	struct stack_frame *rtn = (struct stack_frame *)GC_MALLOC(sizeof(struct stack_frame));
+	assert(rtn);
+	rtn->prev = prev;
+	rtn->head = NULL;
+	rtn->tail = NULL;
+	return rtn;
+}

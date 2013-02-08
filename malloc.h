@@ -6,6 +6,7 @@
 #include "tree.h"
 #include "env.h"
 #include "types.h"
+#include "stack.h"
 
 /* wrapper of bwd-gc, also init the object */
 
@@ -15,5 +16,6 @@ extern struct symbol *alloc_symbol(const char *str);
 extern struct number *alloc_long(long value);
 extern struct number *alloc_double(double value);
 extern struct pair *alloc_pair(struct exp *car, struct exp *cdr);
+extern struct stack_frame *alloc_stack(struct stack_frame *prev);
 
 #endif /*MALLOC_H*/

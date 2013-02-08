@@ -1,7 +1,7 @@
 
 prefix = /usr/local/
-objects = malloc.o tree.o usage.o env.o
-header = malloc.h tree.h usage.h env.h
+objects = malloc.o tree.o usage.o env.o stack.o math.o
+header = malloc.h tree.h usage.h env.h stack.h math.h
 CFLAGS = -c -g -Wall
 
 all:
@@ -25,6 +25,12 @@ usage.o: usage.c $(header)
 
 env.o: env.c $(header)
 	gcc $(CFLAGS) env.c
+
+stack.o: stack.c $(header)
+	gcc $(CFLAGS) stack.c
+
+math.o: math.c $(header)
+	gcc $(CFLAGS) math.c
 
 clean:
 	-find . -type f -regex ".*\.o" | xargs rm
