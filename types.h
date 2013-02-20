@@ -49,7 +49,7 @@ enum callable_type {BUILTIN_SYNTAX, BUILTIN_PRO, LAMBDA, MACRO};
 
 enum rtn_type {SUCC, ERR_ARGC, ERR_TYPE};
 
-typedef enum rtn_type (*builtin_t)(struct pair *args, struct exp **rtn);
+typedef enum rtn_type (*builtin_f)(struct pair *args, struct exp **rtn);
 
 typedef struct lambda_s {
 	struct pair *args;
@@ -66,7 +66,7 @@ typedef struct macro_s {
 struct callable {
 	unsigned long tag;
 	union {
-		builtin_t b_value;
+		builtin_f b_value;
 		lambda_t l_value;
 		macro_t m_value;
 	};
@@ -97,4 +97,19 @@ static inline int is_pair(struct exp *var) {
 	return (var->tag & PAIR);
 }
 
+static inline int is_builtin_syntax(struct callable *var) {
+	return (var->type == BUILTIN_SYNTAX);
+}
+
+static inline int is_builtin_pro(struct callable *var) {
+	return (var->type == BUILTIN_PRO);
+}
+
+static inline int is_lambda(struct callable *var) {
+	return (var->type == LAMBDA);
+}
+
+static inline int is_macro(struct callable *var) {
+	return (var->type == MACRO);
+}
 #endif /* TYPES_H */

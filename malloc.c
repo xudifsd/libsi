@@ -1,8 +1,8 @@
 #include "malloc.h"
 #include <assert.h>
 
-struct envrion *alloc_envrion(struct envrion *parent) {
-	struct envrion *rtn = (struct envrion *)GC_MALLOC(sizeof(struct envrion));
+struct environ *alloc_environ(struct environ *parent) {
+	struct environ *rtn = (struct environ *)GC_MALLOC(sizeof(struct environ));
 	assert(rtn);
 	rtn->parent = parent;
 	rtn->repo = NULL;
@@ -59,6 +59,15 @@ struct stack_frame *alloc_stack(struct stack_frame *prev) {
 	assert(rtn);
 	rtn->prev = prev;
 	rtn->head = NULL;
-	rtn->tail = NULL;
+	rtn->tail = &rtn->head;
+	return rtn;
+}
+
+struct callable *alloc_builtin_pro(builtin_f fun) {
+	struct callable *rtn = GC_MALLOC_ATOMIC(sizeof(struct callable));
+	assert(rtn);
+	rtn->tag = CALLABLE;
+	rtn->type = BUILTIN_PRO;
+	rtn->b_value = fun;
 	return rtn;
 }

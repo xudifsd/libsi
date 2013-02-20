@@ -9,7 +9,6 @@ struct stack_frame {
 	struct stack_frame *prev;
 	struct pair *head;
 	struct pair **tail;
-	struct callable *cache;
 	/* *
 	 * when we parse list we may find first symbol's type in tree to
 	 * determin eval_type, so we should cache it to avoid overhead of
@@ -19,4 +18,5 @@ struct stack_frame {
 
 extern void push_stack(struct stack_frame **f);
 extern void pop_stack(struct stack_frame **f);
+extern void append_stack(struct stack_frame *f, struct pair *p);
 #endif /*STACK_H*/
