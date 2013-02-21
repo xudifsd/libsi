@@ -3,6 +3,7 @@
 #include "env.h"
 #include "interpret.h"
 #include "math.h"
+#include "builtin.h"
 
 /* *
  * this is the most basic scheme repl, compile it and run ./t_main
@@ -22,6 +23,15 @@ int main(int argc, char *argv[]) {
 
 	ca = alloc_builtin_pro(mul);
 	s = alloc_symbol("*");
+	define_in_env(base_env, s, (struct exp *)ca);
+
+
+	ca = alloc_builtin_syntax(quote);
+	s = alloc_symbol("quote");
+	define_in_env(base_env, s, (struct exp *)ca);
+
+	ca = alloc_builtin_syntax(backquote);
+	s = alloc_symbol("backquote");
 	define_in_env(base_env, s, (struct exp *)ca);
 
 	interpret(stdin, stdout, stderr, base_env);

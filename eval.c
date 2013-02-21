@@ -11,6 +11,7 @@ static inline struct exp *eval_map(struct exp *e) {
 }
 
 struct exp *eval(struct exp *e, struct environ *env) {
+	enum rtn_type type;
 	if (e == NULL)
 		return NULL;
 	else if (is_number(e))
@@ -32,8 +33,15 @@ struct exp *eval(struct exp *e, struct environ *env) {
 				eval_map_base = env;
 				args = map(eval_map, (struct pair *)cdr(p)); /* eval args */
 
-				pro->bp_value(args, &rtn);
-				return rtn;
+				type = pro->bp_value(args, &rtn);
+				if (type == SUCC)
+					return rtn;
+				return NULL;
+			} else if (is_builtin_syntax(pro)) {
+				type = pro->bs_value((struct pair *)cdr(p), &rtn, env);
+				if (type == SUCC)
+					return rtn;
+				return NULL;
 			} else {
 				/* not implemented yet */
 				return NULL;

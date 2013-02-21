@@ -5,7 +5,6 @@
 #include "interpret.h"
 #include "stack.h"
 
-#define DEBUG
 
 enum parse_type { PARSE_LB, PARSE_RB, PARSE_SYM, PARSE_LONG, PARSE_DOUBLE,
 	PARSE_EOF, PARSE_QUOTE, PARSE_BACKQUOTE, PARSE_UNQUOTE,
@@ -140,7 +139,7 @@ int interpret(FILE *in, FILE *out, FILE *err, struct environ *base_env) {
 					if (!top) {
 						assert(cur);
 #ifndef DEBUG
-						eval_result = eval(cur, base_env);
+						eval_result = eval((struct exp *)cur, base_env);
 						print(out, eval_result);
 						fputc('\n', out);
 #else
@@ -152,7 +151,7 @@ int interpret(FILE *in, FILE *out, FILE *err, struct environ *base_env) {
 					/* we are in top level */
 					if (cur) {
 #ifndef DEBUG
-						eval_result = eval(cur, base_env);
+						eval_result = eval((struct exp *)cur, base_env);
 						print(out, eval_result);
 						fputc('\n', out);
 #else

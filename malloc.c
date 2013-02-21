@@ -79,3 +79,12 @@ struct callable *alloc_builtin_pro(builtin_pro_f fun) {
 	rtn->bp_value = fun;
 	return rtn;
 }
+
+struct callable *alloc_builtin_syntax(builtin_syntax_f fun) {
+	struct callable *rtn = GC_MALLOC_ATOMIC(sizeof(struct callable));
+	assert(rtn);
+	rtn->tag = CALLABLE;
+	rtn->type = BUILTIN_SYNTAX;
+	rtn->bs_value = fun;
+	return rtn;
+}
