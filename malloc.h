@@ -7,7 +7,6 @@
 #include "env.h"
 #include "types.h"
 #include "stack.h"
-#include "quote_stack.h"
 
 /* wrapper of bwd-gc, also init the object */
 

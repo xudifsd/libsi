@@ -3,7 +3,7 @@
 %{
 #include <assert.h>
 #include "interpret.h"
-#include "quote_stack.h"
+#include "stack.h"
 
 #define DEBUG
 

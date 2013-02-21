@@ -9,14 +9,18 @@ struct stack_frame {
 	struct stack_frame *prev;
 	struct pair *head;
 	struct pair **tail;
-	/* *
-	 * when we parse list we may find first symbol's type in tree to
-	 * determin eval_type, so we should cache it to avoid overhead of
-	 * traverse the tree
-	 */
 };
+
+struct quote_stack {
+	unsigned int nest;
+	struct quote_stack *prev;
+};
+
 
 extern void push_stack(struct stack_frame **f);
 extern void pop_stack(struct stack_frame **f);
 extern void append_stack(struct stack_frame *f, struct exp *p);
+
+extern void push_quote_stack(struct quote_stack **top);
+extern void pop_quote_stack(struct quote_stack **top);
 #endif /*STACK_H*/
