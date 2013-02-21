@@ -71,11 +71,11 @@ struct quote_stack *alloc_quote_stack(struct quote_stack *prev) {
 	return rtn;
 }
 
-struct callable *alloc_builtin_pro(builtin_f fun) {
+struct callable *alloc_builtin_pro(builtin_pro_f fun) {
 	struct callable *rtn = GC_MALLOC_ATOMIC(sizeof(struct callable));
 	assert(rtn);
 	rtn->tag = CALLABLE;
 	rtn->type = BUILTIN_PRO;
-	rtn->b_value = fun;
+	rtn->bp_value = fun;
 	return rtn;
 }

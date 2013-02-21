@@ -2,11 +2,18 @@
 #define TYPES_H
 
 
+struct environ {
+	struct environ *parent;
+	struct tree_node *repo;
+};
+
+
 #define NUMBER    (1<<0)
 #define SYMBOL    (1<<1)
 #define PAIR      (1<<2)
 #define CALLABLE  (1<<3)
 /* Maybe we will never support string type */
+
 
 struct exp {
 	unsigned long tag;
@@ -49,7 +56,9 @@ enum callable_type {BUILTIN_SYNTAX, BUILTIN_PRO, LAMBDA, MACRO};
 
 enum rtn_type {SUCC, ERR_ARGC, ERR_TYPE};
 
-typedef enum rtn_type (*builtin_f)(struct pair *args, struct exp **rtn);
+typedef enum rtn_type (*builtin_pro_f)(struct pair *args, struct exp **rtn);
+
+typedef enum rtn_type (*builtin_syntax_f)(struct pair *args, struct exp **rtn, struct environ *env);
 
 typedef struct lambda_s {
 	struct pair *args;
@@ -66,12 +75,28 @@ typedef struct macro_s {
 struct callable {
 	unsigned long tag;
 	union {
-		builtin_f b_value;
+		builtin_pro_f bp_value;
+		builtin_syntax_f bs_value;
 		lambda_t l_value;
 		macro_t m_value;
 	};
 	enum callable_type type;
 };
+
+
+
+/* This stack frame is *not* run-time stack,  it's parse-time stack */
+struct stack_frame {
+	struct stack_frame *prev;
+	struct pair *head;
+	struct pair **tail;
+};
+
+struct quote_stack {
+	unsigned int nest;
+	struct quote_stack *prev;
+};
+
 
 static inline int is_number(struct exp *var) {
 	return (var->tag & NUMBER);

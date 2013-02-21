@@ -32,7 +32,7 @@ struct exp *eval(struct exp *e, struct environ *env) {
 				eval_map_base = env;
 				args = map(eval_map, (struct pair *)cdr(p)); /* eval args */
 
-				pro->b_value(args, &rtn);
+				pro->bp_value(args, &rtn);
 				return rtn;
 			} else {
 				/* not implemented yet */
