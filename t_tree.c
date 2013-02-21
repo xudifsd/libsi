@@ -37,7 +37,7 @@ int main(int argc, char *argv[]) {
 		template[0] += i;
 		sym[i] = alloc_symbol(template);
 		num[i] = alloc_long(100l + i);
-		tree_insert(&root, sym[i], (struct exp *)num[i], 1);
+		tree_insert(&root, sym[i], (struct exp *)num[i], 0);
 		template[0] = 'a';
 	}
 
