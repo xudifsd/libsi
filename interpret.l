@@ -3,8 +3,13 @@
 %{
 #include <assert.h>
 #include "interpret.h"
+#include "quote_stack.h"
 
-enum parse_type { PARSE_LB, PARSE_RB, PARSE_SYM, PARSE_LONG, PARSE_DOUBLE, PARSE_EOF};
+#define DEBUG
+
+enum parse_type { PARSE_LB, PARSE_RB, PARSE_SYM, PARSE_LONG, PARSE_DOUBLE,
+	PARSE_EOF, PARSE_QUOTE, PARSE_BACKQUOTE, PARSE_UNQUOTE,
+	PARSE_QUOTESPLICE};
 
 struct exp * yylval;
 %}
@@ -31,6 +36,10 @@ struct exp * yylval;
 	yylval = (struct exp *)s;
 	return PARSE_SYM;
 }
+"'" { return PARSE_QUOTE; }
+"`" { return PARSE_BACKQUOTE; }
+"," { return PARSE_UNQUOTE; }
+",@" { return PARSE_QUOTESPLICE; }
 [ \t\n]	{ /* skip */ }
 
 <<EOF>>	{ return PARSE_EOF; }
@@ -42,40 +51,119 @@ int interpret(FILE *in, FILE *out, FILE *err, struct environ *base_env) {
 	struct exp *eval_result;
 
 	struct pair *cur;
-	struct pair *new;
+	struct symbol *s;
 	struct stack_frame *top = NULL;
+	struct quote_stack *quote_top = NULL;
 
 	while (rtn != PARSE_EOF) {
 		rtn = yylex();
 		switch (rtn) {
+			case PARSE_QUOTE:
+				push_stack(&top);
+				s = alloc_symbol("quote");
+				append_stack(top, (struct exp *)s);
+				push_quote_stack(&quote_top);
+				break;
+			case PARSE_BACKQUOTE:
+				push_stack(&top);
+				s = alloc_symbol("backquote");
+				append_stack(top, (struct exp *)s);
+				push_quote_stack(&quote_top);
+				break;
+			case PARSE_UNQUOTE:
+				push_stack(&top);
+				s = alloc_symbol("unquote");
+				append_stack(top, (struct exp *)s);
+				push_quote_stack(&quote_top);
+				break;
+			case PARSE_QUOTESPLICE:
+				push_stack(&top);
+				s = alloc_symbol("quotesplice");
+				append_stack(top, (struct exp *)s);
+				push_quote_stack(&quote_top);
+				break;
+
 			case PARSE_LB:
 				push_stack(&top);
+				if (quote_top)
+					quote_top->nest++;
 				break;
 			case PARSE_RB:
 				assert(top);
+
+				if (quote_top) {
+					if (quote_top->nest)
+						quote_top->nest--;
+					while (quote_top && quote_top->nest == 0) {
+						pop_quote_stack(&quote_top);
+
+						cur = top->head;
+						pop_stack(&top);
+						append_stack(top, (struct exp *)cur);
+					}
+				}
+
 				cur = top->head;
 				pop_stack(&top);
 
 				if (top) {
-					new = alloc_pair((struct exp *)cur, NULL);
-					append_stack(top, new);
+					append_stack(top, (struct exp *)cur);
 				} else {
 					/* we are in top level */
+#ifndef DEBUG
 					eval_result = eval((struct exp *)cur, base_env);
 					print(out, eval_result);
 					fputc('\n', out);
+#else
+					print(out, (struct exp *)cur);
+					fputc('\n', out);
+#endif
 				}
 				break;
-			case PARSE_SYM:
-			case PARSE_LONG:
+			case PARSE_SYM: /* fall through */
+			case PARSE_LONG: /* fall through */
 			case PARSE_DOUBLE:
 				if (top) {
-					new = alloc_pair(yylval, NULL);
-					append_stack(top, new);
+					append_stack(top, yylval);
+
+					cur = NULL;
+					while (quote_top && quote_top->nest == 0) {
+						pop_quote_stack(&quote_top);
+
+						cur = top->head;
+						pop_stack(&top);
+						if (top) {
+							append_stack(top, (struct exp *)cur);
+						} else
+							break;
+					}
+					if (!top) {
+						assert(cur);
+#ifndef DEBUG
+						eval_result = eval(cur, base_env);
+						print(out, eval_result);
+						fputc('\n', out);
+#else
+						print(out, (struct exp *)cur);
+						fputc('\n', out);
+#endif
+					}
 				} else {
-					eval_result = eval(yylval, base_env);
-					print(out, eval_result);
-					fputc('\n', out);
+					/* we are in top level */
+					if (cur) {
+#ifndef DEBUG
+						eval_result = eval(cur, base_env);
+						print(out, eval_result);
+						fputc('\n', out);
+#else
+						print(out, (struct exp *)cur);
+						fputc('\n', out);
+#endif
+					} else {
+						eval_result = eval(yylval, base_env);
+						print(out, eval_result);
+						fputc('\n', out);
+					}
 				}
 				break;
 			case PARSE_EOF:

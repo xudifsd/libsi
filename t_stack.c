@@ -18,35 +18,28 @@ int main(int argc, char *argv[]) {
 	push_stack(&top);
 
 	s = alloc_symbol("+");
-	p = alloc_pair((struct exp *)s, NULL);
-	append_stack(top, p);
+	append_stack(top, (struct exp *)s);
 
 	n = alloc_long(5);
-	p = alloc_pair((struct exp *)n, NULL);
-	append_stack(top, p);
+	append_stack(top, (struct exp *)n);
 
 	push_stack(&top);
 
 	s = alloc_symbol("*");
-	p = alloc_pair((struct exp *)s, NULL);
-	append_stack(top, p);
+	append_stack(top, (struct exp *)s);
 
 	n = alloc_long(2);
-	p = alloc_pair((struct exp *)n, NULL);
-	append_stack(top, p);
+	append_stack(top, (struct exp *)n);
 
 	n = alloc_long(1);
-	p = alloc_pair((struct exp *)n, NULL);
-	append_stack(top, p);
+	append_stack(top, (struct exp *)n);
 
 	p = top->head;
 	pop_stack(&top);
-	p = alloc_pair((struct exp *)p, NULL);
-	append_stack(top, p);
+	append_stack(top, (struct exp *)p);
 
 	n = alloc_long(10);
-	p = alloc_pair((struct exp *)n, NULL);
-	append_stack(top, p);
+	append_stack(top, (struct exp *)n);
 
 	p = top->head;
 	print(stdout, (struct exp *)p);

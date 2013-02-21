@@ -63,6 +63,14 @@ struct stack_frame *alloc_stack(struct stack_frame *prev) {
 	return rtn;
 }
 
+struct quote_stack *alloc_quote_stack(struct quote_stack *prev) {
+	struct quote_stack *rtn = (struct quote_stack *)GC_MALLOC(sizeof(struct quote_stack));
+	assert(rtn);
+	rtn->prev = prev;
+	rtn->nest = 0;
+	return rtn;
+}
+
 struct callable *alloc_builtin_pro(builtin_f fun) {
 	struct callable *rtn = GC_MALLOC_ATOMIC(sizeof(struct callable));
 	assert(rtn);

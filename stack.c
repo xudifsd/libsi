@@ -12,7 +12,8 @@ void pop_stack(struct stack_frame **f) {
 	*f = (*f)->prev;
 }
 
-void append_stack(struct stack_frame *f, struct pair *p) {
-	*(f->tail) = p;
-	f->tail = (struct pair **)&p->cdr;
+void append_stack(struct stack_frame *f, struct exp *p) {
+	struct pair *new = alloc_pair(p, NULL);
+	*(f->tail) = new;
+	f->tail = (struct pair **)&new->cdr;
 }

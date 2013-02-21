@@ -18,5 +18,5 @@ struct stack_frame {
 
 extern void push_stack(struct stack_frame **f);
 extern void pop_stack(struct stack_frame **f);
-extern void append_stack(struct stack_frame *f, struct pair *p);
+extern void append_stack(struct stack_frame *f, struct exp *p);
 #endif /*STACK_H*/
