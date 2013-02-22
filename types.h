@@ -99,23 +99,23 @@ struct quote_stack {
 
 
 static inline int is_number(struct exp *var) {
-	return (var->tag & NUMBER);
+	return (var && (var->tag & NUMBER));
 }
 
 static inline int is_long(struct number *num) {
-	return num->type == LONG;
+	return (num && num->type == LONG);
 }
 
 static inline int is_double(struct number *num) {
-	return num->type == DOUBLE;
+	return (num && num->type == DOUBLE);
 }
 
 static inline int is_symbol(struct exp *var) {
-	return (var->tag & SYMBOL);
+	return (var && (var->tag & SYMBOL));
 }
 
 static inline int is_callable(struct exp *var) {
-	return (var->tag & CALLABLE);
+	return (var && (var->tag & CALLABLE));
 }
 
 static inline int is_pair(struct exp *var) {
@@ -123,18 +123,18 @@ static inline int is_pair(struct exp *var) {
 }
 
 static inline int is_builtin_syntax(struct callable *var) {
-	return (var->type == BUILTIN_SYNTAX);
+	return (var && (var->type == BUILTIN_SYNTAX));
 }
 
 static inline int is_builtin_pro(struct callable *var) {
-	return (var->type == BUILTIN_PRO);
+	return (var && (var->type == BUILTIN_PRO));
 }
 
 static inline int is_lambda(struct callable *var) {
-	return (var->type == LAMBDA);
+	return (var && (var->type == LAMBDA));
 }
 
 static inline int is_macro(struct callable *var) {
-	return (var->type == MACRO);
+	return (var && (var->type == MACRO));
 }
 #endif /* TYPES_H */

@@ -1,7 +1,7 @@
 
 prefix = /usr/local/
 objects = malloc.o tree.o usage.o env.o stack.o math.o utils.o eval.o builtin.o
-header = malloc.h tree.h usage.h env.h stack.h math.h utils.h eval.h interpret.h builtin.h
+header = malloc.h tree.h usage.h env.h stack.h math.h utils.h eval.h interpret.h builtin.h types.h
 CFLAGS = -c -g -Wall
 
 all:
