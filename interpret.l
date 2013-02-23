@@ -42,6 +42,7 @@ struct exp * yylval;
 "," { return PARSE_UNQUOTE; }
 ",@" { return PARSE_QUOTESPLICE; }
 [ \t\n]	{ /* skip */ }
+;.*$	{ /* skip comment */}
 
 <<EOF>>	{ return PARSE_EOF; }
 %%
