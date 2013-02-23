@@ -31,11 +31,32 @@ enum rtn_type length(struct pair *args, struct exp **rtn) {
 	return SUCC;
 }
 
+/* *
+ * this eval is to exported to user space, it's just wrapper for eval
+ * also, by definition, eval should be builtin_pro instead of builtin_syntax
+ * but user_eval will use env to call eval, so we register user_eval as
+ * builtin_syntax and eval it's args ourselves
+ */
+enum rtn_type user_eval(struct pair *args, struct exp **rtn, struct environ *env) {
+	enum rtn_type r_type;
+	struct exp *r_args;
+
+	if ((r_type = check_args(args, 1)) != SUCC)
+		return r_type;
+
+	r_type = eval(car(args), &r_args, env);
+
+	if (r_type != SUCC)
+		return r_type;
+	else
+		return eval(r_args, rtn, env);
+}
+
 enum rtn_type quote(struct pair *args, struct exp **rtn, struct environ *env) {
 	enum rtn_type r_type;
 	if ((r_type = check_args(args, 1)) != SUCC)
 		return r_type;
-	*rtn = (struct exp *)car(args);
+	*rtn = car(args);
 	return SUCC;
 }
 
@@ -54,6 +75,10 @@ enum rtn_type backquote(struct pair *args, struct exp **rtn, struct environ *env
 	if ((r_type = check_args(args, 1)) != SUCC)
 		return r_type;
 
+	if (!car(args)) {
+		*rtn = NULL;
+		return SUCC;
+	}
 	if (is_pair(car(args))) {
 		args = (struct pair *)car(args);
 
@@ -67,8 +92,10 @@ enum rtn_type backquote(struct pair *args, struct exp **rtn, struct environ *env
 							!is_pair(car((struct pair *)cdr((struct pair *)ar))) ||
 							cdr((struct pair *)cdr((struct pair *)ar)) != NULL)
 						return ERR_ARG;
-					result = eval(car((struct pair *)cdr((struct pair *)ar)), env);
-					if (!result || !is_pair(result))
+					r_type = eval(car((struct pair *)cdr((struct pair *)ar)), &result, env);
+					if (r_type != SUCC)
+						return r_type;
+					else if (!is_pair(result))
 						return ERR_ARG;
 					*tail = result;
 
@@ -91,7 +118,9 @@ enum rtn_type backquote(struct pair *args, struct exp **rtn, struct environ *env
 				if (!is_pair(cdr(p)) ||
 						cdr((struct pair *)cdr(p)) != NULL)
 					return ERR_ARG;
-				result = eval(car((struct pair *)cdr(p)), env);
+				r_type = eval(car((struct pair *)cdr(p)), &result, env);
+				if (r_type != SUCC)
+					return r_type;
 				*tail = result; //we may update tail, but as we will return, it makes no sense
 				break;
 			} else {

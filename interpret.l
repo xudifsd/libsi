@@ -47,11 +47,12 @@ struct exp * yylval;
 %%
 
 void eval_print(struct exp *in, FILE *out, FILE *err, struct environ *env, int lineno) {
-	struct exp *eval_result;
+	struct exp *result;
+	enum rtn_type r_type;
 #ifndef DEBUG
-	eval_result = eval((struct exp *)in, env);
-	if (eval_result) {
-		print(out, eval_result);
+	r_type = eval(in, &result, env);
+	if (r_type == SUCC) {
+		print(out, result);
 		fputc('\n', out);
 	} else {
 		error(err, "error in line %d:", lineno);
@@ -59,7 +60,7 @@ void eval_print(struct exp *in, FILE *out, FILE *err, struct environ *env, int l
 		fputc('\n', err);
 	}
 #else
-	print(out, (struct exp *)in);
+	print(out, in);
 	fputc('\n', out);
 #endif
 }

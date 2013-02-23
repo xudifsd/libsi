@@ -5,7 +5,9 @@ void print(FILE *port, struct exp *e) {
 	struct number *n;
 	struct symbol *s;
 	struct pair *p;
-	if (is_pair(e)) {
+	if (!e)
+		fprintf(port, "() ");
+	else if (is_pair(e)) {
 		fprintf(port, "(");
 		for_pair(p, (struct pair *)e)
 			print(port, (struct exp *)p->car);

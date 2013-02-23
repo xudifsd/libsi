@@ -4,6 +4,6 @@
 #include "env.h"
 #include "types.h"
 
-extern struct exp *eval(struct exp *e, struct environ *env);
+enum rtn_type eval(struct exp *e, struct exp **rtn, struct environ *env);
 
 #endif /*EVAL_H*/

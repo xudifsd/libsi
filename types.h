@@ -54,7 +54,7 @@ enum callable_type {BUILTIN_SYNTAX, BUILTIN_PRO, LAMBDA, MACRO};
  * should have this prototype, which count contains the number of args
  * */
 
-enum rtn_type {SUCC, ERR_ARGC, ERR_TYPE, ERR_ARG};
+enum rtn_type {SUCC, ERR_ARGC, ERR_TYPE, ERR_ARG, ERR_UNBOUND};
 
 typedef enum rtn_type (*builtin_pro_f)(struct pair *args, struct exp **rtn);
 
@@ -119,7 +119,7 @@ static inline int is_callable(struct exp *var) {
 }
 
 static inline int is_pair(struct exp *var) {
-	return (var->tag & PAIR);
+	return (var && (var->tag & PAIR));
 }
 
 static inline int is_builtin_syntax(struct callable *var) {

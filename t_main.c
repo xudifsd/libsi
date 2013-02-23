@@ -41,6 +41,10 @@ int main(int argc, char *argv[]) {
 	define_in_env(base_env, s, (struct exp *)ca);
 
 
+	ca = alloc_builtin_syntax(user_eval);
+	s = alloc_symbol("eval");
+	define_in_env(base_env, s, (struct exp *)ca);
+
 	ca = alloc_builtin_syntax(quote);
 	s = alloc_symbol("quote");
 	define_in_env(base_env, s, (struct exp *)ca);
