@@ -31,6 +31,11 @@ enum rtn_type length(struct pair *args, struct exp **rtn) {
 	return SUCC;
 }
 
+enum rtn_type list(struct pair *args, struct exp **rtn) {
+	*rtn = (struct exp *)args;
+	return SUCC;
+}
+
 /* *
  * this eval is to exported to user space, it's just wrapper for eval
  * also, by definition, eval should be builtin_pro instead of builtin_syntax

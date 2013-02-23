@@ -35,10 +35,14 @@ int main(int argc, char *argv[]) {
 	s = alloc_symbol("*");
 	define_in_env(base_env, s, (struct exp *)ca);
 
-
 	ca = alloc_builtin_pro(length);
 	s = alloc_symbol("length");
 	define_in_env(base_env, s, (struct exp *)ca);
+
+	ca = alloc_builtin_pro(list);
+	s = alloc_symbol("list");
+	define_in_env(base_env, s, (struct exp *)ca);
+
 
 
 	ca = alloc_builtin_syntax(user_eval);
