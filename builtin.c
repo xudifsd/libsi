@@ -1,8 +1,40 @@
 #include "builtin.h"
 
-enum rtn_type quote(struct pair *args, struct exp **rtn, struct environ *env) {
-	if (cdr(args) != NULL)
+static enum rtn_type check_args(struct pair *args, unsigned int nr_arg) {
+	unsigned int len = 0;
+	struct pair *p;
+
+	for_pair(p, args)
+		len++;
+
+	if (len != nr_arg)
 		return ERR_ARGC;
+	return SUCC;
+}
+
+enum rtn_type length(struct pair *args, struct exp **rtn) {
+	unsigned int len = 0;
+	struct pair *p;
+	enum rtn_type r_type;
+	struct exp *r_args;
+
+	if ((r_type = check_args(args, 1)) != SUCC)
+		return r_type;
+
+	r_args = car(args);
+
+	if (!is_pair(r_args))
+		return ERR_TYPE;
+	for_pair(p, (struct pair *)r_args)
+		len++;
+	*rtn = (struct exp *)alloc_long(len);
+	return SUCC;
+}
+
+enum rtn_type quote(struct pair *args, struct exp **rtn, struct environ *env) {
+	enum rtn_type r_type;
+	if ((r_type = check_args(args, 1)) != SUCC)
+		return r_type;
 	*rtn = (struct exp *)car(args);
 	return SUCC;
 }
@@ -17,10 +49,10 @@ enum rtn_type backquote(struct pair *args, struct exp **rtn, struct environ *env
 	struct exp *ar;
 	struct exp *aar;
 	struct exp *result;
-	enum rtn_type type;
+	enum rtn_type r_type;
 
-	if (cdr(args) != NULL)
-		return ERR_ARGC;
+	if ((r_type = check_args(args, 1)) != SUCC)
+		return r_type;
 
 	if (is_pair(car(args))) {
 		args = (struct pair *)car(args);
@@ -48,9 +80,9 @@ enum rtn_type backquote(struct pair *args, struct exp **rtn, struct environ *env
 					tail = tmp_tail;
 				} else {
 					new = alloc_pair(ar, NULL); //makes call legal
-					type = backquote(new, &result, env);
-					if (type != SUCC)
-						return type;
+					r_type = backquote(new, &result, env);
+					if (r_type != SUCC)
+						return r_type;
 					new = alloc_pair(result, NULL);
 					*tail = (struct exp *)new;
 					tail = (struct exp **)&new->cdr;

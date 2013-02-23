@@ -4,6 +4,8 @@
 #include <assert.h>
 #include "interpret.h"
 #include "stack.h"
+#include "usage.h"
+#include "eval.h"
 
 
 enum parse_type { PARSE_LB, PARSE_RB, PARSE_SYM, PARSE_LONG, PARSE_DOUBLE,
@@ -44,10 +46,27 @@ struct exp * yylval;
 <<EOF>>	{ return PARSE_EOF; }
 %%
 
+void eval_print(struct exp *in, FILE *out, FILE *err, struct environ *env, int lineno) {
+	struct exp *eval_result;
+#ifndef DEBUG
+	eval_result = eval((struct exp *)in, env);
+	if (eval_result) {
+		print(out, eval_result);
+		fputc('\n', out);
+	} else {
+		error(err, "error in line %d:", lineno);
+		print(err, (struct exp *)in);
+		fputc('\n', err);
+	}
+#else
+	print(out, (struct exp *)in);
+	fputc('\n', out);
+#endif
+}
+
 int interpret(FILE *in, FILE *out, FILE *err, struct environ *base_env) {
 	yyin = in;
 	enum parse_type rtn;
-	struct exp *eval_result;
 
 	struct pair *cur;
 	struct symbol *s;
@@ -107,21 +126,13 @@ int interpret(FILE *in, FILE *out, FILE *err, struct environ *base_env) {
 
 				if (top) {
 					append_stack(top, (struct exp *)cur);
-				} else {
-					/* we are in top level */
-#ifndef DEBUG
-					eval_result = eval((struct exp *)cur, base_env);
-					print(out, eval_result);
-					fputc('\n', out);
-#else
-					print(out, (struct exp *)cur);
-					fputc('\n', out);
-#endif
-				}
+				} else
+					eval_print((struct exp *)cur, out, err, base_env, yylineno);
 				break;
 			case PARSE_SYM: /* fall through */
 			case PARSE_LONG: /* fall through */
 			case PARSE_DOUBLE:
+				cur = NULL;
 				if (top) {
 					append_stack(top, yylval);
 
@@ -138,31 +149,14 @@ int interpret(FILE *in, FILE *out, FILE *err, struct environ *base_env) {
 					}
 					if (!top) {
 						assert(cur);
-#ifndef DEBUG
-						eval_result = eval((struct exp *)cur, base_env);
-						print(out, eval_result);
-						fputc('\n', out);
-#else
-						print(out, (struct exp *)cur);
-						fputc('\n', out);
-#endif
+						eval_print((struct exp *)cur, out, err, base_env, yylineno);
 					}
 				} else {
 					/* we are in top level */
-					if (cur) {
-#ifndef DEBUG
-						eval_result = eval((struct exp *)cur, base_env);
-						print(out, eval_result);
-						fputc('\n', out);
-#else
-						print(out, (struct exp *)cur);
-						fputc('\n', out);
-#endif
-					} else {
-						eval_result = eval(yylval, base_env);
-						print(out, eval_result);
-						fputc('\n', out);
-					}
+					if (cur)
+						eval_print((struct exp *)cur, out, err, base_env, yylineno);
+					else
+						eval_print((struct exp *)yylval, out, err, base_env, yylineno);
 				}
 				break;
 			case PARSE_EOF:
