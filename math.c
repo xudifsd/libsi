@@ -49,33 +49,45 @@ enum rtn_type name(struct pair *args, struct exp **rtn) {\
 template_for_add_mul(add, 0, +)
 template_for_add_mul(mul, 1, *)
 
-#define template_for_log_sin_cos_tan(name)\
-enum rtn_type u_##name(struct pair *args, struct exp **rtn) {\
-	struct number *num;\
-	double result;\
-	struct exp *ar;\
-	enum rtn_type r_type;\
-\
-	if ((r_type = check_args(args, 1)) != SUCC)\
-		return r_type;\
-\
-	ar = car(args);\
-	if (is_number(ar)) {\
-		num = (struct number *)ar;\
-		if (is_long(num))\
-			result = name(num->l_value);\
-		else\
-			result = name(num->d_value);\
-		if (isnormal(result)) {\
-			*rtn = (struct exp *)alloc_double(result);\
-			return SUCC;\
-		} else\
-			return ERR_MATH;\
-	} else\
-		return ERR_TYPE;\
+typedef double(*math_f)(double);
+
+static enum rtn_type wrapper_for_math_function(struct pair *args, struct exp **rtn, math_f fun) {
+	struct number *num;
+	double result;
+	struct exp *ar;
+	enum rtn_type r_type;
+
+	if ((r_type = check_args(args, 1)) != SUCC)
+		return r_type;
+
+	ar = car(args);
+	if (is_number(ar)) {
+		num = (struct number *)ar;
+		if (is_long(num))
+			result = fun(num->l_value);
+		else
+			result = fun(num->d_value);
+		if (isnormal(result)) {
+			*rtn = (struct exp *)alloc_double(result);
+			return SUCC;
+		} else
+			return ERR_MATH;
+	} else
+		return ERR_TYPE;
 }
 
-template_for_log_sin_cos_tan(log);
-template_for_log_sin_cos_tan(sin);
-template_for_log_sin_cos_tan(cos);
-template_for_log_sin_cos_tan(tan);
+enum rtn_type u_log(struct pair *args, struct exp **rtn) {
+	return wrapper_for_math_function(args, rtn, log);
+}
+
+enum rtn_type u_sin(struct pair *args, struct exp **rtn) {
+	return wrapper_for_math_function(args, rtn, sin);
+}
+
+enum rtn_type u_cos(struct pair *args, struct exp **rtn) {
+	return wrapper_for_math_function(args, rtn, cos);
+}
+
+enum rtn_type u_tan(struct pair *args, struct exp **rtn) {
+	return wrapper_for_math_function(args, rtn, tan);
+}
