@@ -8,6 +8,7 @@ typedef struct exp *(*map_f)(struct exp *);
 
 extern void print(FILE *port, struct exp *e);
 extern struct pair *map(map_f fun, struct pair *p);
+extern enum rtn_type check_args(struct pair *args, unsigned int nr_arg);
 
 static inline struct exp *car(struct pair *p) {
 	return p->car;

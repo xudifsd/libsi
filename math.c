@@ -21,7 +21,7 @@ static struct number *construct_number(long l, double d, int type) {
 	return rtn;
 }
 
-#define math_template(name, init, sym) \
+#define template_for_add_mul(name, init, sym) \
 enum rtn_type name(struct pair *args, struct exp **rtn) {\
 	long l_sum = init;\
 	double d_sum = init;\
@@ -46,5 +46,36 @@ enum rtn_type name(struct pair *args, struct exp **rtn) {\
 	return SUCC;\
 }
 
-math_template(add, 0, +)
-math_template(mul, 1, *)
+template_for_add_mul(add, 0, +)
+template_for_add_mul(mul, 1, *)
+
+#define template_for_log_sin_cos_tan(name)\
+enum rtn_type u_##name(struct pair *args, struct exp **rtn) {\
+	struct number *num;\
+	double result;\
+	struct exp *ar;\
+	enum rtn_type r_type;\
+\
+	if ((r_type = check_args(args, 1)) != SUCC)\
+		return r_type;\
+\
+	ar = car(args);\
+	if (is_number(ar)) {\
+		num = (struct number *)ar;\
+		if (is_long(num))\
+			result = name(num->l_value);\
+		else\
+			result = name(num->d_value);\
+		if (isnormal(result)) {\
+			*rtn = (struct exp *)alloc_double(result);\
+			return SUCC;\
+		} else\
+			return ERR_MATH;\
+	} else\
+		return ERR_TYPE;\
+}
+
+template_for_log_sin_cos_tan(log);
+template_for_log_sin_cos_tan(sin);
+template_for_log_sin_cos_tan(cos);
+template_for_log_sin_cos_tan(tan);

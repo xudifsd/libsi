@@ -1,17 +1,5 @@
 #include "builtin.h"
 
-static enum rtn_type check_args(struct pair *args, unsigned int nr_arg) {
-	unsigned int len = 0;
-	struct pair *p;
-
-	for_pair(p, args)
-		len++;
-
-	if (len != nr_arg)
-		return ERR_ARGC;
-	return SUCC;
-}
-
 enum rtn_type length(struct pair *args, struct exp **rtn) {
 	unsigned int len = 0;
 	struct pair *p;

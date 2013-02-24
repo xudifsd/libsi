@@ -43,6 +43,22 @@ int main(int argc, char *argv[]) {
 	s = alloc_symbol("list");
 	define_in_env(base_env, s, (struct exp *)ca);
 
+	ca = alloc_builtin_pro(u_log);
+	s = alloc_symbol("log");
+	define_in_env(base_env, s, (struct exp *)ca);
+
+	ca = alloc_builtin_pro(u_sin);
+	s = alloc_symbol("sin");
+	define_in_env(base_env, s, (struct exp *)ca);
+
+	ca = alloc_builtin_pro(u_cos);
+	s = alloc_symbol("cos");
+	define_in_env(base_env, s, (struct exp *)ca);
+
+	ca = alloc_builtin_pro(u_tan);
+	s = alloc_symbol("tan");
+	define_in_env(base_env, s, (struct exp *)ca);
+
 
 
 	ca = alloc_builtin_syntax(user_eval);

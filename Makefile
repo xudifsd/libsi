@@ -3,19 +3,20 @@ prefix = /usr/local/
 objects = malloc.o tree.o usage.o env.o stack.o math.o utils.o eval.o builtin.o
 header = malloc.h tree.h usage.h env.h stack.h math.h utils.h eval.h interpret.h builtin.h types.h
 CFLAGS = -c -g -Wall
+LIB = -lgc -lm
 
 all:
 
 debug: t_tree t_stack t_main
 
 t_tree: t_tree.o $(objects)
-	gcc -o t_tree t_tree.o malloc.o tree.o -lgc
+	gcc -o t_tree t_tree.o malloc.o tree.o $(LIB)
 
 t_stack: t_stack.o $(objects)
-	gcc -o t_stack t_stack.o $(objects) -lgc
+	gcc -o t_stack t_stack.o $(objects) $(LIB)
 
 t_main: t_main.o interpret.o $(objects)
-	gcc -o t_main t_main.o interpret.o $(objects) -lgc
+	gcc -o t_main t_main.o interpret.o $(objects) $(LIB)
 
 t_tree.o: t_tree.c $(header)
 	gcc $(CFLAGS) t_tree.c

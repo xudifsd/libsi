@@ -17,7 +17,7 @@ void print(FILE *port, struct exp *e) {
 		if (is_long(n)) {
 			fprintf(port, "%ld ", n->l_value);
 		} else {
-			fprintf(port, "%.3f ", n->d_value);
+			fprintf(port, "%.8f ", n->d_value);
 		}
 	} else if (is_symbol(e)) {
 		s = (struct symbol *)e;
@@ -37,4 +37,16 @@ struct pair *map(map_f fun, struct pair *p) {
 		tail = (struct pair **)&rtn->cdr;
 	}
 	return head;
+}
+
+enum rtn_type check_args(struct pair *args, unsigned int nr_arg) {
+	unsigned int len = 0;
+	struct pair *p;
+
+	for_pair(p, args)
+		len++;
+
+	if (len != nr_arg)
+		return ERR_ARGC;
+	return SUCC;
 }
