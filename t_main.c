@@ -59,6 +59,18 @@ int main(int argc, char *argv[]) {
 	s = alloc_symbol("tan");
 	define_in_env(base_env, s, (struct exp *)ca);
 
+	ca = alloc_builtin_pro(cons);
+	s = alloc_symbol("cons");
+	define_in_env(base_env, s, (struct exp *)ca);
+
+	ca = alloc_builtin_pro(u_car);
+	s = alloc_symbol("car");
+	define_in_env(base_env, s, (struct exp *)ca);
+
+	ca = alloc_builtin_pro(u_cdr);
+	s = alloc_symbol("cdr");
+	define_in_env(base_env, s, (struct exp *)ca);
+
 
 
 	ca = alloc_builtin_syntax(user_eval);

@@ -24,6 +24,41 @@ enum rtn_type list(struct pair *args, struct exp **rtn) {
 	return SUCC;
 }
 
+enum rtn_type cons(struct pair *args, struct exp **rtn) {
+	enum rtn_type r_type;
+
+	if ((r_type = check_args(args, 2)) != SUCC)
+		return r_type;
+
+	*rtn = (struct exp *)alloc_pair(car(args), car((struct pair *)cdr(args)));
+	return SUCC;
+}
+
+/* type 0 for car, 1 for cdr */
+static enum rtn_type wrapper_for_car_cdr(struct pair *args, struct exp **rtn, int type) {
+	struct exp *r_args;
+	enum rtn_type r_type;
+
+	if ((r_type = check_args(args, 1)) != SUCC)
+		return r_type;
+	r_args = car(args);
+	if (is_pair(r_args)) {
+		if (type == 0)
+			*rtn = car((struct pair *)r_args);
+		else
+			*rtn = cdr((struct pair *)r_args);
+		return SUCC;
+	} else
+		return ERR_TYPE;
+}
+enum rtn_type u_car(struct pair *args, struct exp **rtn) {
+	return wrapper_for_car_cdr(args, rtn, 0);
+}
+
+enum rtn_type u_cdr(struct pair *args, struct exp **rtn) {
+	return wrapper_for_car_cdr(args, rtn, 1);
+}
+
 /* *
  * this eval is to exported to user space, it's just wrapper for eval
  * also, by definition, eval should be builtin_pro instead of builtin_syntax
