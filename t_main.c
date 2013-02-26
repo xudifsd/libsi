@@ -71,6 +71,14 @@ int main(int argc, char *argv[]) {
 	s = alloc_symbol("cdr");
 	define_in_env(base_env, s, (struct exp *)ca);
 
+	ca = alloc_builtin_pro(min);
+	s = alloc_symbol("min");
+	define_in_env(base_env, s, (struct exp *)ca);
+
+	ca = alloc_builtin_pro(max);
+	s = alloc_symbol("max");
+	define_in_env(base_env, s, (struct exp *)ca);
+
 
 
 	ca = alloc_builtin_syntax(user_eval);

@@ -57,7 +57,7 @@ static enum rtn_type wrapper_for_math_function(struct pair *args, struct exp **r
 	struct exp *ar;
 	enum rtn_type r_type;
 
-	if ((r_type = check_args(args, 1)) != SUCC)
+	if ((r_type = check_args(args, 1, 0)) != SUCC)
 		return r_type;
 
 	ar = car(args);

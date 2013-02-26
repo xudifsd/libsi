@@ -6,7 +6,7 @@ enum rtn_type length(struct pair *args, struct exp **rtn) {
 	enum rtn_type r_type;
 	struct exp *r_args;
 
-	if ((r_type = check_args(args, 1)) != SUCC)
+	if ((r_type = check_args(args, 1, 0)) != SUCC)
 		return r_type;
 
 	r_args = car(args);
@@ -27,7 +27,7 @@ enum rtn_type list(struct pair *args, struct exp **rtn) {
 enum rtn_type cons(struct pair *args, struct exp **rtn) {
 	enum rtn_type r_type;
 
-	if ((r_type = check_args(args, 2)) != SUCC)
+	if ((r_type = check_args(args, 2, 0)) != SUCC)
 		return r_type;
 
 	*rtn = (struct exp *)alloc_pair(car(args), car((struct pair *)cdr(args)));
@@ -39,7 +39,7 @@ static enum rtn_type wrapper_for_car_cdr(struct pair *args, struct exp **rtn, in
 	struct exp *r_args;
 	enum rtn_type r_type;
 
-	if ((r_type = check_args(args, 1)) != SUCC)
+	if ((r_type = check_args(args, 1, 0)) != SUCC)
 		return r_type;
 	r_args = car(args);
 	if (is_pair(r_args)) {
@@ -59,6 +59,79 @@ enum rtn_type u_cdr(struct pair *args, struct exp **rtn) {
 	return wrapper_for_car_cdr(args, rtn, 1);
 }
 
+/* when succ, rtn contains a pair whose car is min, cdr is max */
+static enum rtn_type min_max(struct pair *args, struct pair **rtn) {
+	double cur_dmax = DBL_MIN;
+	double cur_dmin = DBL_MAX;
+	long cur_lmax = LONG_MIN;
+	long cur_lmin = LONG_MAX;
+	struct pair *p;
+	struct number *n_min;
+	struct number *n_max;
+	struct number *num;
+	struct exp *e;
+	enum rtn_type r_type;
+
+	if ((r_type = check_args(args, 1, 1)) != SUCC)
+		return r_type;
+
+	for_pair(p, args) {
+		e = car(p);
+		if (e && is_number(e)) {
+			num = (struct number *)e;
+			if (is_long(num)) {
+				if (num->l_value > cur_lmax)
+					cur_lmax = num->l_value;
+				if (num->l_value < cur_lmin)
+					cur_lmin = num->l_value;
+			} else {
+				if (num->d_value > cur_dmax)
+					cur_dmax = num->d_value;
+				if (num->d_value < cur_dmin)
+					cur_dmin = num->d_value;
+			}
+		} else
+			return ERR_TYPE;
+	}
+
+	if (cur_lmax < cur_dmax)
+		n_max = alloc_double(cur_dmax);
+	else
+		n_max = alloc_long(cur_lmax);
+
+	if (cur_lmin > cur_dmin)
+		n_min = alloc_double(cur_dmin);
+	else
+		n_min = alloc_long(cur_lmin);
+
+	*rtn = alloc_pair((struct exp *)n_min, (struct exp *)n_max);
+	return SUCC;
+}
+
+enum rtn_type min(struct pair *args, struct exp **rtn) {
+	struct pair *result;
+	enum rtn_type r_type;
+	r_type = min_max(args, &result);
+	if (r_type != SUCC)
+		return r_type;
+	else {
+		*rtn = car(result);
+		return SUCC;
+	}
+}
+
+enum rtn_type max(struct pair *args, struct exp **rtn) {
+	struct pair *result;
+	enum rtn_type r_type;
+	r_type = min_max(args, &result);
+	if (r_type != SUCC)
+		return r_type;
+	else {
+		*rtn = cdr(result);
+		return SUCC;
+	}
+}
+
 /* *
  * this eval is to exported to user space, it's just wrapper for eval
  * also, by definition, eval should be builtin_pro instead of builtin_syntax
@@ -69,7 +142,7 @@ enum rtn_type user_eval(struct pair *args, struct exp **rtn, struct environ *env
 	enum rtn_type r_type;
 	struct exp *r_args;
 
-	if ((r_type = check_args(args, 1)) != SUCC)
+	if ((r_type = check_args(args, 1, 0)) != SUCC)
 		return r_type;
 
 	r_type = eval(car(args), &r_args, env);
@@ -82,7 +155,7 @@ enum rtn_type user_eval(struct pair *args, struct exp **rtn, struct environ *env
 
 enum rtn_type quote(struct pair *args, struct exp **rtn, struct environ *env) {
 	enum rtn_type r_type;
-	if ((r_type = check_args(args, 1)) != SUCC)
+	if ((r_type = check_args(args, 1, 0)) != SUCC)
 		return r_type;
 	*rtn = car(args);
 	return SUCC;
@@ -100,7 +173,7 @@ enum rtn_type backquote(struct pair *args, struct exp **rtn, struct environ *env
 	struct exp *result;
 	enum rtn_type r_type;
 
-	if ((r_type = check_args(args, 1)) != SUCC)
+	if ((r_type = check_args(args, 1, 0)) != SUCC)
 		return r_type;
 
 	if (!car(args)) {

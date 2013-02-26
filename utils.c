@@ -39,14 +39,18 @@ struct pair *map(map_f fun, struct pair *p) {
 	return head;
 }
 
-enum rtn_type check_args(struct pair *args, unsigned int nr_arg) {
+/* if at_least is not 0, len should be at least nr_arg, not exactly */
+enum rtn_type check_args(struct pair *args, unsigned int nr_arg, int at_least) {
 	unsigned int len = 0;
 	struct pair *p;
 
 	for_pair(p, args)
 		len++;
 
-	if (len != nr_arg)
+	if (at_least && len < nr_arg)
 		return ERR_ARGC;
-	return SUCC;
+	else if (!at_least && len != nr_arg)
+		return ERR_ARGC;
+	else
+		return SUCC;
 }
