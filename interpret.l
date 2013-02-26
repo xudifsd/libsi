@@ -41,7 +41,8 @@ struct exp * yylval;
 "`" { return PARSE_BACKQUOTE; }
 "," { return PARSE_UNQUOTE; }
 ",@" { return PARSE_QUOTESPLICE; }
-[ \t\n]	{ /* skip */ }
+[ \t]	{ /* skip */ }
+"\n"	{ yylineno++; }
 ;.*$	{ /* skip comment */}
 
 <<EOF>>	{ return PARSE_EOF; }
@@ -58,7 +59,23 @@ void eval_print(struct exp *in, FILE *out, FILE *err, struct environ *env, int l
 	} else {
 		error(err, "error in line %d:", lineno);
 		print(err, (struct exp *)in);
-		fputc('\n', err);
+
+		switch (r_type) {
+			case SUCC: /* avoid compile warning */
+				break;
+			case ERR_ARGC:
+				error(err, "\ngiven wrong number of args\n");
+				break;
+			case ERR_TYPE:
+				error(err, "\ngiven wrong type of args\n");
+				break;
+			case ERR_UNBOUND:
+				error(err, "\nunbound symbol\n");
+				break;
+			case ERR_MATH:
+				error(err, "\ndoing math wrong\n");
+				break;
+		}
 	}
 #else
 	print(out, in);

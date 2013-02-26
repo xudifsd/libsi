@@ -62,7 +62,7 @@ enum rtn_type eval(struct exp *e, struct exp **rtn, struct environ *env) {
 					return type;
 			} else {
 				/* not implemented yet */
-				return ERR_ARG;
+				return ERR_TYPE;
 			}
 		} else {
 			return ERR_TYPE;

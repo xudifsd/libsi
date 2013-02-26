@@ -192,12 +192,12 @@ enum rtn_type backquote(struct pair *args, struct exp **rtn, struct environ *env
 					if (!is_pair(cdr((struct pair *)ar)) ||
 							!is_pair(car((struct pair *)cdr((struct pair *)ar))) ||
 							cdr((struct pair *)cdr((struct pair *)ar)) != NULL)
-						return ERR_ARG;
+						return ERR_TYPE;
 					r_type = eval(car((struct pair *)cdr((struct pair *)ar)), &result, env);
 					if (r_type != SUCC)
 						return r_type;
 					else if (!is_pair(result))
-						return ERR_ARG;
+						return ERR_TYPE;
 					*tail = result;
 
 					/* direct tail to the right place */
@@ -218,7 +218,7 @@ enum rtn_type backquote(struct pair *args, struct exp **rtn, struct environ *env
 			} else if (is_symbol(ar) && !strcmp(((struct symbol *)ar)->sym, "unquote")) {
 				if (!is_pair(cdr(p)) ||
 						cdr((struct pair *)cdr(p)) != NULL)
-					return ERR_ARG;
+					return ERR_TYPE;
 				r_type = eval(car((struct pair *)cdr(p)), &result, env);
 				if (r_type != SUCC)
 					return r_type;
