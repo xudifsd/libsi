@@ -8,9 +8,9 @@
 typedef void (*handler_fn)(struct tree_node *);
 
 static void traverse(struct tree_node *p, handler_fn handler) {
+	handler(p);
 	if (p->left)
 		traverse(p->left, handler);
-	handler(p);
 	if (p->right)
 		traverse(p->right, handler);
 }
@@ -19,10 +19,19 @@ void to_dot(struct tree_node *cur) {
 	if (cur->left != NULL)
 		fprintf(stderr, "\t\"%s\" -> \"%s\"[headport=n, tailport=sw]\n", cur->sym->sym, cur->left->sym->sym);
 
+	if (cur->parent != NULL)
+		fprintf(stderr, "\t\"%s\" -> \"%s\"[headport=s, tailport=n]\n", cur->sym->sym, cur->parent->sym->sym);
+
 	fprintf(stderr, "\t\"%s\"[color=%s]\n", cur->sym->sym, (cur->color == RED)?"red":"black");
 
 	if (cur->right != NULL)
-		fprintf(stderr, "\t\"%s\" -> \"%s\"[headport=n, tailport=sw]\n", cur->sym->sym, cur->right->sym->sym);
+		fprintf(stderr, "\t\"%s\" -> \"%s\"[headport=n, tailport=se]\n", cur->sym->sym, cur->right->sym->sym);
+}
+
+void dump(struct tree_node *root) {
+	fprintf(stderr, "digraph heaptree{\n");
+	traverse(root, to_dot);
+	fprintf(stderr, "}\n");
 }
 
 int main(int argc, char *argv[]) {
@@ -41,9 +50,7 @@ int main(int argc, char *argv[]) {
 		template[0] = 'a';
 	}
 
-	fprintf(stderr, "digraph heaptree{\n");
-	traverse(root, to_dot);
-	fprintf(stderr, "}\n");
+	dump(root);
 
 	assert(((struct number *)tree_find(root, "c"))->l_value == 100 + 'c' - 'a');
 	assert(((struct number *)tree_find(root, "z"))->l_value == 100 + 'z' - 'a');

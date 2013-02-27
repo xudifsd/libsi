@@ -16,6 +16,10 @@ static inline struct tree_node *uncle(struct tree_node *n) {
 static inline void rotate_left(struct tree_node *p) {
 	struct tree_node *c = p->right;
 	p->right = c->left;
+	if (p->right) {
+		p->right->parent = p;
+		p->right->pparent = &p->right;
+	}
 	c->left = p;
 	c->parent = p->parent;
 	p->parent = c;
@@ -27,6 +31,10 @@ static inline void rotate_left(struct tree_node *p) {
 static inline void rotate_right(struct tree_node *p) {
 	struct tree_node *c = p->left;
 	p->left = c->right;
+	if (p->left) {
+		p->left->parent = p;
+		p->left->pparent = &p->left;
+	}
 	c->right = p;
 	c->parent = p->parent;
 	p->parent = c;
