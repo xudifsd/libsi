@@ -3,6 +3,7 @@
 enum rtn_type apply(struct pair *args, struct exp **rtn) {
 	struct environ *env;
 	struct callable *c;
+	struct exp *cadr;
 	struct pair *result;
 	struct pair *r_args;
 	enum rtn_type r_type;
@@ -13,10 +14,12 @@ enum rtn_type apply(struct pair *args, struct exp **rtn) {
 	if (!is_callable(car(args)) || !is_pair(cdr(args)))
 		return ERR_TYPE;
 
-	if (!is_pair(car((struct pair *)cdr(args))))
+	cadr = car((struct pair *)cdr(args));
+	if (!is_pair(cadr) && cadr != NULL) /* allow 0 args */
 		return ERR_TYPE;
+
 	c = (struct callable *)car(args);
-	r_args = (struct pair *)car((struct pair *)cdr(args));
+	r_args = (struct pair *)cadr;
 
 	if (!is_lambda(c))
 		return ERR_TYPE;
