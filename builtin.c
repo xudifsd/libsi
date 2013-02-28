@@ -153,6 +153,25 @@ enum rtn_type user_eval(struct pair *args, struct exp **rtn, struct environ *env
 		return eval(r_args, rtn, env);
 }
 
+enum rtn_type lambda(struct pair *args, struct exp **rtn, struct environ *env) {
+	struct pair *l_args;
+	struct pair *l_body;
+	enum rtn_type r_type;
+
+	if ((r_type = check_args(args, 2, 1)) != SUCC)
+		return r_type;
+
+	if (is_pair(car(args)) || car(args) == NULL) /* we accept 0 args for lambda */
+		l_args = (struct pair *)car(args);
+	else
+		return ERR_TYPE;
+
+	l_body = (struct pair *)cdr(args); /* we know from check_args that args should be list */
+
+	*rtn = (struct exp *)alloc_lambda(l_args, l_body, env);
+	return SUCC;
+}
+
 enum rtn_type quote(struct pair *args, struct exp **rtn, struct environ *env) {
 	enum rtn_type r_type;
 	if ((r_type = check_args(args, 1, 0)) != SUCC)

@@ -1,7 +1,7 @@
 
 prefix = /usr/local/
-objects = malloc.o tree.o usage.o env.o stack.o math.o utils.o eval.o builtin.o
-header = malloc.h tree.h usage.h env.h stack.h math.h utils.h eval.h interpret.h builtin.h types.h
+objects = malloc.o tree.o usage.o env.o stack.o math.o utils.o eval.o builtin.o apply.o
+header = malloc.h tree.h usage.h env.h stack.h math.h utils.h eval.h interpret.h builtin.h types.h apply.h
 CFLAGS = -c -g -Wall
 LIB = -lgc -lm
 
@@ -60,6 +60,9 @@ eval.o: eval.c $(header)
 
 builtin.o: builtin.c $(header)
 	gcc $(CFLAGS) builtin.c
+
+apply.o: apply.c $(header)
+	gcc $(CFLAGS) apply.c
 
 clean:
 	-find . -type f -regex ".*\.o" | xargs rm

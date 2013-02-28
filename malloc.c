@@ -88,3 +88,14 @@ struct callable *alloc_builtin_syntax(builtin_syntax_f fun) {
 	rtn->bs_value = fun;
 	return rtn;
 }
+
+struct callable *alloc_lambda(struct pair *pars, struct pair *body, struct environ *bind) {
+	struct callable *rtn = GC_MALLOC(sizeof(struct callable));
+	assert(rtn);
+	rtn->tag = CALLABLE;
+	rtn->type = LAMBDA;
+	rtn->l_value.pars = pars;
+	rtn->l_value.body = body;
+	rtn->l_value.bind = bind;
+	return rtn;
+}

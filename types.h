@@ -61,15 +61,15 @@ typedef enum rtn_type (*builtin_pro_f)(struct pair *args, struct exp **rtn);
 typedef enum rtn_type (*builtin_syntax_f)(struct pair *args, struct exp **rtn, struct environ *env);
 
 typedef struct lambda_s {
-	struct pair *args;
-	struct env *bind;
+	struct pair *pars;
 	struct pair *body;
+	struct environ *bind;
 } lambda_t;
 
 typedef struct macro_s {
-	struct pair *args;
-	struct env *bind;
+	struct pair *pars;
 	struct pair *body;
+	struct environ *bind;
 } macro_t;
 
 struct callable {

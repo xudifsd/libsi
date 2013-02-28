@@ -1,5 +1,4 @@
 #include "env.h"
-#include "malloc.h"
 
 /* *
  * define only change current env, it's do not affect parent environ,
@@ -32,4 +31,23 @@ struct exp *find_in_env(struct environ *env, struct symbol *sym) {
 			return rtn;
 	}
 	return NULL;
+}
+
+struct environ *extend_env(struct pair *pars, struct pair *args, struct environ *base) {
+	struct pair *p1, *p2;
+	struct exp *e1,  *e2;
+	struct environ *rtn;
+
+	rtn = alloc_environ(base);
+	for (p1 = pars, p2 = args;
+			p1 && p2;
+			p1 = (struct pair *)cdr(p1),
+				p2 = (struct pair *)cdr(p2)) {
+		e1 = car(p1);
+		e2 = car(p2);
+		if (!is_symbol(e1))
+			return NULL;
+		define_in_env(rtn, (struct symbol *)e1, e2);
+	}
+	return rtn;
 }

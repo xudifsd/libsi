@@ -4,6 +4,7 @@
 void print(FILE *port, struct exp *e) {
 	struct number *n;
 	struct symbol *s;
+	struct callable *c;
 	struct pair *p;
 	if (!e)
 		fprintf(port, "() ");
@@ -22,6 +23,20 @@ void print(FILE *port, struct exp *e) {
 	} else if (is_symbol(e)) {
 		s = (struct symbol *)e;
 		fprintf(port, "%s ", s->sym);
+	} else if (is_callable(e)) {
+		c = (struct callable *)e;
+		if (is_builtin_pro(c))
+			fprintf(port, "#<builtin procedure>");
+		else if (is_builtin_syntax(c))
+			fprintf(port, "#<builtin syntax>");
+		else if (is_lambda(c)) {
+			fprintf(port, "lambda whose args is:\n");
+			print(port, (struct exp *)c->l_value.pars);
+		} else {
+			/* is_macro(c) */
+			fprintf(port, "macro whose args is:\n");
+			print(port, (struct exp *)c->m_value.pars);
+		}
 	}
 }
 
@@ -53,4 +68,12 @@ enum rtn_type check_args(struct pair *args, unsigned int nr_arg, int at_least) {
 		return ERR_ARGC;
 	else
 		return SUCC;
+}
+
+struct exp *last_element(struct pair *head) {
+	struct pair *p;
+	for_pair(p, head)
+		if (cdr(p) == NULL)
+			return car(p);
+	return NULL; /* avoid compile warning */
 }
