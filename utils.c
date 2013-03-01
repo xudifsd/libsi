@@ -7,22 +7,22 @@ void print(FILE *port, struct exp *e) {
 	struct callable *c;
 	struct pair *p;
 	if (!e)
-		fprintf(port, "() ");
+		fprintf(port, "()");
 	else if (is_pair(e)) {
 		fprintf(port, "(");
 		for_pair(p, (struct pair *)e)
 			print(port, (struct exp *)p->car);
-		fprintf(port, "\b) ");
+		fprintf(port, "\b)");
 	} else if (is_number(e)) {
 		n = (struct number *)e;
 		if (is_long(n)) {
-			fprintf(port, "%ld ", n->l_value);
+			fprintf(port, "%ld", n->l_value);
 		} else {
-			fprintf(port, "%.8f ", n->d_value);
+			fprintf(port, "%.8f", n->d_value);
 		}
 	} else if (is_symbol(e)) {
 		s = (struct symbol *)e;
-		fprintf(port, "%s ", s->sym);
+		fprintf(port, "%s", s->sym);
 	} else if (is_callable(e)) {
 		c = (struct callable *)e;
 		if (is_builtin_pro(c))
@@ -30,14 +30,17 @@ void print(FILE *port, struct exp *e) {
 		else if (is_builtin_syntax(c))
 			fprintf(port, "#<builtin syntax>");
 		else if (is_lambda(c)) {
-			fprintf(port, "lambda whose args is:\n");
+			fprintf(port, "#<lambda with pars ");
 			print(port, (struct exp *)c->l_value.pars);
+			fprintf(port, ">");
 		} else {
 			/* is_macro(c) */
-			fprintf(port, "macro whose args is:\n");
+			fprintf(port, "#<macro with pars ");
 			print(port, (struct exp *)c->m_value.pars);
+			fprintf(port, ">");
 		}
 	}
+	fputc(' ', port); /* makes output more beautiful */
 }
 
 struct pair *map(map_f fun, struct pair *p) {

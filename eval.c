@@ -24,10 +24,7 @@ struct pair *eval_sequence(struct pair *args, struct environ *env) {
 enum rtn_type eval(struct exp *e, struct exp **rtn, struct environ *env) {
 	enum rtn_type type;
 	struct exp *value;
-	if (e == NULL) {
-		*rtn = NULL;
-		return SUCC;
-	} else if (is_number(e)) {
+	if (e == NULL || is_number(e)) {
 		*rtn = e;
 		return SUCC;
 	} else if (is_symbol(e)) {
@@ -38,26 +35,26 @@ enum rtn_type eval(struct exp *e, struct exp **rtn, struct environ *env) {
 		} else
 			return ERR_UNBOUND;
 	} else if (is_pair(e)) {
-		struct exp *value;
 		struct pair *p = (struct pair *)e;
-		if (is_symbol(car(p))) {
-			value = find_in_env(env, (struct symbol *)car(p));
-			if (!value)
-				return ERR_UNBOUND;
+		struct exp *ar = car(p);
+		if (is_symbol(ar) || is_pair(ar)) {
+			type = eval(ar, &value, env);
+			if (type != SUCC)
+				return type;
+
 			if (is_callable(value)) {
 				struct exp *result;
 				struct callable *pro = (struct callable *)value;
 
-				if (is_builtin_pro(pro)) {
+				if (is_builtin_pro(pro) || is_lambda(pro)) {
 					struct pair *args;
+					struct pair *args_for_apply;
 					args = eval_sequence((struct pair *)cdr(p), env);
 
-					type = pro->bp_value(args, &result);
-					if (type == SUCC) {
-						*rtn = result;
-						return SUCC;
-					}
-					return type;
+					args_for_apply = alloc_pair((struct exp *)args, NULL);
+					args_for_apply = alloc_pair((struct exp *)pro, (struct exp *)args_for_apply);
+
+					return apply(args_for_apply, rtn);
 				} else if (is_builtin_syntax(pro)) {
 					type = pro->bs_value((struct pair *)cdr(p), &result, env);
 					if (type == SUCC) {
@@ -65,50 +62,12 @@ enum rtn_type eval(struct exp *e, struct exp **rtn, struct environ *env) {
 						return SUCC;
 					} else
 						return type;
-				} else if (is_lambda(pro)) {
-					struct pair *args;
-					struct pair *args_for_apply;
-					args = eval_sequence((struct pair *)cdr(p), env);
-
-					args_for_apply = alloc_pair((struct exp *)args, NULL);
-					args_for_apply = alloc_pair((struct exp *)pro, (struct exp *)args_for_apply);
-					type = apply(args_for_apply, rtn);
-
-					return type;
-				} else {
-					/* not implemented yet */
+				} else /* not implemented yet */
 					return ERR_TYPE;
-				}
-			} else {
-				/* !is_callable(value) */
+			} else /* !is_callable(value) */
 				return ERR_TYPE;
-			}
-		} else if (is_pair(car(p))) {
-			/* FIXME we should take this into `apply' */
-			struct exp *result;
-			type = eval(car(p), &result, env);
-			if (type != SUCC)
-				return type;
-
-			if (is_callable(result)) {
-				struct callable *pro = (struct callable *)result;
-
-				if (is_lambda(pro)) {
-					struct pair *args;
-					struct pair *args_for_apply;
-					args = eval_sequence((struct pair *)cdr(p), env);
-
-					args_for_apply = alloc_pair((struct exp *)args, NULL);
-					args_for_apply = alloc_pair((struct exp *)pro, (struct exp *)args_for_apply);
-					type = apply(args_for_apply, rtn);
-
-					return type;
-				} else
-					return ERR_TYPE;
-			} else
-				return ERR_TYPE;
-		}
+		} else /* !(is_symbol(ar) || is_pair(ar)) */
+			return ERR_TYPE;
 	} else
 		return ERR_TYPE;
-	return ERR_TYPE; /* avoid compile warning */
 }

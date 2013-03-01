@@ -21,11 +21,14 @@ enum rtn_type apply(struct pair *args, struct exp **rtn) {
 	c = (struct callable *)car(args);
 	r_args = (struct pair *)cadr;
 
-	if (!is_lambda(c))
-		return ERR_TYPE;
-	env = extend_env(c->l_value.pars, r_args, c->l_value.bind);
+	if (is_lambda(c)) {
+		env = extend_env(c->l_value.pars, r_args, c->l_value.bind);
 
-	result = eval_sequence(c->l_value.body, env);
-	*rtn = last_element(result);
-	return SUCC;
+		result = eval_sequence(c->l_value.body, env);
+		*rtn = last_element(result);
+		return SUCC;
+	} else if (is_builtin_pro(c))
+		return c->bp_value(r_args, rtn);
+	else
+		return ERR_TYPE;
 }
