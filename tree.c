@@ -1,6 +1,5 @@
 #include "tree.h"
 #include "malloc.h"
-#include <assert.h>
 
 static inline struct tree_node *grandparent(struct tree_node *n) {
 	return n->parent->parent;

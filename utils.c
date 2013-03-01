@@ -15,11 +15,10 @@ void print(FILE *port, struct exp *e) {
 		fprintf(port, "\b)");
 	} else if (is_number(e)) {
 		n = (struct number *)e;
-		if (is_long(n)) {
+		if (is_long(n))
 			fprintf(port, "%ld", n->l_value);
-		} else {
+		else
 			fprintf(port, "%.8f", n->d_value);
-		}
 	} else if (is_symbol(e)) {
 		s = (struct symbol *)e;
 		fprintf(port, "%s", s->sym);

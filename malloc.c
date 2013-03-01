@@ -25,6 +25,7 @@ struct tree_node *alloc_tree_node(struct tree_node *parent, struct tree_node **p
 
 struct symbol *alloc_symbol(const char *str) {
 	struct symbol *rtn = (struct symbol *)GC_MALLOC_ATOMIC(sizeof(struct symbol));
+	assert(rtn);
 	rtn->tag = SYMBOL;
 	strcpy((char *)rtn->sym, str);
 	return rtn;
@@ -32,6 +33,7 @@ struct symbol *alloc_symbol(const char *str) {
 
 struct number *alloc_long(long value) {
 	struct number *rtn = (struct number *)GC_MALLOC_ATOMIC(sizeof(struct number));
+	assert(rtn);
 	rtn->tag = NUMBER;
 	rtn->type = LONG;
 	rtn->l_value = value;
@@ -40,6 +42,7 @@ struct number *alloc_long(long value) {
 
 struct number *alloc_double(double value) {
 	struct number *rtn = (struct number *)GC_MALLOC_ATOMIC(sizeof(struct number));
+	assert(rtn);
 	rtn->tag = NUMBER;
 	rtn->type = DOUBLE;
 	rtn->d_value = value;
@@ -48,6 +51,7 @@ struct number *alloc_double(double value) {
 
 struct pair *alloc_pair(struct exp *car, struct exp *cdr) {
 	struct pair *rtn = (struct pair *)GC_MALLOC(sizeof(struct pair));
+	assert(rtn);
 	rtn->tag = PAIR;
 	rtn->car = car;
 	rtn->cdr = cdr;

@@ -1,7 +1,6 @@
 %option noyywrap
 
 %{
-#include <assert.h>
 #include "interpret.h"
 #include "stack.h"
 #include "usage.h"
@@ -51,7 +50,6 @@ struct exp * yylval;
 void eval_print(struct exp *in, FILE *out, FILE *err, struct environ *env, int lineno) {
 	struct exp *result;
 	enum rtn_type r_type;
-#ifndef DEBUG
 	r_type = eval(in, &result, env);
 	if (r_type == SUCC) {
 		print(out, result);
@@ -77,10 +75,6 @@ void eval_print(struct exp *in, FILE *out, FILE *err, struct environ *env, int l
 				break;
 		}
 	}
-#else
-	print(out, in);
-	fputc('\n', out);
-#endif
 }
 
 int interpret(FILE *in, FILE *out, FILE *err, struct environ *base_env) {
@@ -119,39 +113,39 @@ int interpret(FILE *in, FILE *out, FILE *err, struct environ *base_env) {
 				append_stack(top, (struct exp *)s);
 				push_quote_stack(&quote_top);
 				break;
-
 			case PARSE_LB:
 				push_stack(&top);
 				if (quote_top)
 					quote_top->nest++;
 				break;
 			case PARSE_RB:
-				assert(top);
+				if (!top)
+					error(err, "error in line %d: unexpected `)'\n", yylineno);
+				else {
+					if (quote_top) {
+						if (quote_top->nest)
+							quote_top->nest--;
+						while (quote_top && quote_top->nest == 0) {
+							pop_quote_stack(&quote_top);
 
-				if (quote_top) {
-					if (quote_top->nest)
-						quote_top->nest--;
-					while (quote_top && quote_top->nest == 0) {
-						pop_quote_stack(&quote_top);
-
-						cur = top->head;
-						pop_stack(&top);
-						append_stack(top, (struct exp *)cur);
+							cur = top->head;
+							pop_stack(&top);
+							append_stack(top, (struct exp *)cur);
+						}
 					}
+
+					cur = top->head;
+					pop_stack(&top);
+
+					if (top)
+						append_stack(top, (struct exp *)cur);
+					else
+						eval_print((struct exp *)cur, out, err, base_env, yylineno);
 				}
-
-				cur = top->head;
-				pop_stack(&top);
-
-				if (top) {
-					append_stack(top, (struct exp *)cur);
-				} else
-					eval_print((struct exp *)cur, out, err, base_env, yylineno);
 				break;
 			case PARSE_SYM: /* fall through */
 			case PARSE_LONG: /* fall through */
 			case PARSE_DOUBLE:
-				cur = NULL;
 				if (top) {
 					append_stack(top, yylval);
 
@@ -161,22 +155,15 @@ int interpret(FILE *in, FILE *out, FILE *err, struct environ *base_env) {
 
 						cur = top->head;
 						pop_stack(&top);
-						if (top) {
+						if (top)
 							append_stack(top, (struct exp *)cur);
-						} else
+						else
 							break;
 					}
-					if (!top) {
-						assert(cur);
+					if (!top)
 						eval_print((struct exp *)cur, out, err, base_env, yylineno);
-					}
-				} else {
-					/* we are in top level */
-					if (cur)
-						eval_print((struct exp *)cur, out, err, base_env, yylineno);
-					else
-						eval_print((struct exp *)yylval, out, err, base_env, yylineno);
-				}
+				} else /* we are in top level */
+					eval_print(yylval, out, err, base_env, yylineno);
 				break;
 			case PARSE_EOF:
 				break;
