@@ -85,6 +85,12 @@ void eval_print(struct exp *in, FILE *out, FILE *err, struct environ *env, int l
 			case ERR_MATH:
 				error(err, "\ndoing math wrong\n");
 				break;
+			case ERR_ENV:
+				error(err, "\nsomething is wrong with environment\n");
+				break;
+			case ERR_MEM:
+				error(err, "\nMemory error\n");
+				break;
 		}
 	}
 }

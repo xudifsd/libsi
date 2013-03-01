@@ -178,6 +178,56 @@ enum rtn_type u_if(struct pair *args, struct exp **rtn, struct environ *env) {
 	} else
 		return eval(car((struct pair *)cdr(args)), rtn, env);
 }
+
+enum rtn_type define(struct pair *args, struct exp **rtn, struct environ *env) {
+	struct exp *ar, *adr;
+	enum rtn_type r_type;
+
+	if ((r_type = check_args(args, 2, 1)) != SUCC)
+		return r_type;
+
+	ar = car(args);
+	adr = car((struct pair *)cdr(args));
+	if (is_symbol(ar)) { /* (define x 10) */
+		if ((r_type = check_args(args, 2, 0)) != SUCC)
+			return r_type;
+		r_type = eval(adr, rtn, env);
+		if (r_type != SUCC)
+			return r_type;
+		if (define_in_env(env, (struct symbol *)ar, *rtn))
+			return ERR_ENV;
+		*rtn = NULL;
+		return SUCC;
+	} else if (is_pair(ar)) {
+		/* (define (x y) y) */
+		struct exp *aar, *dar, *dr;
+		struct pair *pars, *body;
+		struct symbol *s;
+		struct pair *p;
+		aar = car((struct pair *)ar);
+		dar = cdr((struct pair *)ar);
+		dr = cdr((struct pair *)args);
+		if (!is_symbol(aar) ||
+				!is_pair(dar) ||
+				!is_pair(dr))
+			return ERR_TYPE;
+		s = (struct symbol *)aar;
+		pars = (struct pair *)dar;
+		body = (struct pair *)dr;
+
+		/* construct args for lambda */
+		p = alloc_pair((struct exp *)pars, (struct exp *)body);
+		r_type = lambda(p, rtn, env);
+		if (r_type != SUCC)
+			return r_type;
+		if (define_in_env(env, s, *rtn))
+			return ERR_ENV;
+		*rtn = NULL;
+		return SUCC;
+	} else
+		return ERR_TYPE;
+}
+
 enum rtn_type lambda(struct pair *args, struct exp **rtn, struct environ *env) {
 	struct pair *l_args;
 	struct pair *l_body;

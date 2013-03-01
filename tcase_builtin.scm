@@ -15,3 +15,6 @@
 (if 0 1 2)			;should be 1, 0 is also treated as true
 (if 3 2)			;should be 2
 (if #f 1 2)			;should be 2
+(define x 10)			;should be ()
+(define (y z) 1 x)		;should be ()
+(y 100)				;should be 10
