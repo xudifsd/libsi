@@ -1,6 +1,15 @@
 #include "malloc.h"
 #include <assert.h>
 
+static struct bool bpool[2] = {{BOOL, 0}, {BOOL, 1}};
+
+struct bool *alloc_bool(int value) {
+	if (value)
+		return bpool + 1;
+	else
+		return bpool + 0;
+}
+
 struct environ *alloc_environ(struct environ *parent) {
 	struct environ *rtn = (struct environ *)GC_MALLOC(sizeof(struct environ));
 	assert(rtn);

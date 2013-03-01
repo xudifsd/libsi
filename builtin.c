@@ -153,6 +153,31 @@ enum rtn_type user_eval(struct pair *args, struct exp **rtn, struct environ *env
 		return eval(r_args, rtn, env);
 }
 
+enum rtn_type u_if(struct pair *args, struct exp **rtn, struct environ *env) {
+	enum rtn_type r_type;
+	struct exp *predict;
+	int nr_args;
+
+	if ((r_type = check_args(args, 2, 0)) != SUCC) {
+		if ((r_type = check_args(args, 3, 0)) != SUCC)
+			return r_type;
+		else
+			nr_args = 3;
+	} else
+		nr_args = 2;
+
+	r_type = eval(car(args), &predict, env);
+	if (r_type != SUCC)
+		return r_type;
+
+	if (is_bool(predict) && ((struct bool *)predict)->value == 0) {
+		/* not true*/
+		if (nr_args == 2)
+			return ERR_ARGC;
+		return eval(car((struct pair *)cdr((struct pair *)cdr(args))), rtn, env);
+	} else
+		return eval(car((struct pair *)cdr(args)), rtn, env);
+}
 enum rtn_type lambda(struct pair *args, struct exp **rtn, struct environ *env) {
 	struct pair *l_args;
 	struct pair *l_body;

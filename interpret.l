@@ -9,7 +9,7 @@
 
 enum parse_type { PARSE_LB, PARSE_RB, PARSE_SYM, PARSE_LONG, PARSE_DOUBLE,
 	PARSE_EOF, PARSE_QUOTE, PARSE_BACKQUOTE, PARSE_UNQUOTE,
-	PARSE_QUOTESPLICE};
+	PARSE_QUOTESPLICE, PARSE_TRUE, PARSE_FALSE};
 
 struct exp * yylval;
 %}
@@ -29,6 +29,18 @@ struct exp * yylval;
 		yylval = (struct exp *)l;
 		return PARSE_LONG;
 	}
+}
+#[tT] {
+	struct bool *b;
+	b = alloc_bool(1);
+	yylval = (struct exp *)b;
+	return PARSE_TRUE;
+}
+#[fF] {
+	struct bool *b;
+	b = alloc_bool(0);
+	yylval = (struct exp *)b;
+	return PARSE_FALSE;
 }
 [^',@` \(\)\t\n]+ {
 	struct symbol *s;
@@ -145,6 +157,8 @@ int interpret(FILE *in, FILE *out, FILE *err, struct environ *base_env) {
 				break;
 			case PARSE_SYM: /* fall through */
 			case PARSE_LONG: /* fall through */
+			case PARSE_TRUE: /* fall through */
+			case PARSE_FALSE: /* fall through */
 			case PARSE_DOUBLE:
 				if (top) {
 					append_stack(top, yylval);

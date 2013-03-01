@@ -89,6 +89,10 @@ int main(int argc, char *argv[]) {
 	s = alloc_symbol("eval");
 	define_in_env(base_env, s, (struct exp *)ca);
 
+	ca = alloc_builtin_syntax(u_if);
+	s = alloc_symbol("if");
+	define_in_env(base_env, s, (struct exp *)ca);
+
 	ca = alloc_builtin_syntax(lambda);
 	s = alloc_symbol("lambda");
 	define_in_env(base_env, s, (struct exp *)ca);

@@ -8,6 +8,12 @@ void print(FILE *port, struct exp *e) {
 	struct pair *p;
 	if (!e)
 		fprintf(port, "()");
+	else if (is_bool(e)) {
+		if (((struct bool *)e)->value)
+			fprintf(port, "#t");
+		else
+			fprintf(port, "#f");
+	}
 	else if (is_pair(e)) {
 		fprintf(port, "(");
 		for_pair(p, (struct pair *)e)

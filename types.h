@@ -12,6 +12,7 @@ struct environ {
 #define SYMBOL    (1<<1)
 #define PAIR      (1<<2)
 #define CALLABLE  (1<<3)
+#define BOOL	  (1<<4)
 /* Maybe we will never support string type */
 
 
@@ -20,6 +21,11 @@ struct exp {
 };
 
 enum num_type {LONG, DOUBLE};
+
+struct bool {
+	unsigned long tag;
+	unsigned int value:1;
+};
 
 struct number {
 	unsigned long tag;
@@ -97,6 +103,10 @@ struct quote_stack {
 	struct quote_stack *prev;
 };
 
+
+static inline int is_bool(struct exp *var) {
+	return (var && (var->tag & BOOL));
+}
 
 static inline int is_number(struct exp *var) {
 	return (var && (var->tag & NUMBER));

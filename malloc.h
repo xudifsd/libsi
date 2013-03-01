@@ -10,6 +10,7 @@
 
 /* wrapper of bwd-gc, also init the object */
 
+extern struct bool *alloc_bool(int value);
 extern struct environ *alloc_environ(struct environ *parent);
 extern struct tree_node *alloc_tree_node(struct tree_node *parent, struct tree_node **pparent, struct symbol *sym, struct exp *e);
 extern struct symbol *alloc_symbol(const char *str);

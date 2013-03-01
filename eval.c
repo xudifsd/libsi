@@ -24,7 +24,7 @@ struct pair *eval_sequence(struct pair *args, struct environ *env) {
 enum rtn_type eval(struct exp *e, struct exp **rtn, struct environ *env) {
 	enum rtn_type type;
 	struct exp *value;
-	if (e == NULL || is_number(e)) {
+	if (e == NULL || is_number(e) || is_bool(e)) {
 		*rtn = e;
 		return SUCC;
 	} else if (is_symbol(e)) {
