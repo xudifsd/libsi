@@ -97,6 +97,14 @@ int main(int argc, char *argv[]) {
 	s = alloc_symbol("define");
 	define_in_env(base_env, s, (struct exp *)ca);
 
+	ca = alloc_builtin_syntax(set);
+	s = alloc_symbol("set!");
+	define_in_env(base_env, s, (struct exp *)ca);
+
+	ca = alloc_builtin_syntax(begin);
+	s = alloc_symbol("begin");
+	define_in_env(base_env, s, (struct exp *)ca);
+
 	ca = alloc_builtin_syntax(lambda);
 	s = alloc_symbol("lambda");
 	define_in_env(base_env, s, (struct exp *)ca);

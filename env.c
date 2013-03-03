@@ -15,7 +15,7 @@ int define_in_env(struct environ *env, struct symbol *sym, struct exp *value) {
 int set_in_env(struct environ *env, struct symbol *sym, struct exp *value) {
 	struct environ *p;
 	for (p = env; p; p = p->parent) {
-		if (tree_insert(&env->repo, sym, value, 1))
+		if (tree_insert(&p->repo, sym, value, 1))
 			continue;
 		return 0;
 	}

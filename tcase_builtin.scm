@@ -18,3 +18,7 @@
 (define x 10)			;should be ()
 (define (y z) 1 x)		;should be ()
 (y 100)				;should be 10
+(define (yy z) (set! x z))	;should be ()
+x				;should be 10
+(yy 200)			;should be ()
+x				;should be 200

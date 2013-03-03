@@ -228,6 +228,37 @@ enum rtn_type define(struct pair *args, struct exp **rtn, struct environ *env) {
 		return ERR_TYPE;
 }
 
+enum rtn_type set(struct pair *args, struct exp **rtn, struct environ *env) {
+	struct symbol *s;
+	struct exp *ar;
+	struct exp *adr;
+	enum rtn_type r_type;
+
+	if ((r_type = check_args(args, 2, 0)) != SUCC)
+		return r_type;
+
+	ar = car(args);
+	adr = car((struct pair *)cdr(args));
+	if (!is_symbol(ar))
+		return ERR_TYPE;
+	s = (struct symbol *)ar;
+
+	r_type = eval(adr, rtn, env);
+	if (r_type != SUCC)
+		return r_type;
+
+	if (set_in_env(env, s, *rtn))
+		return ERR_ENV;
+	*rtn = NULL;
+	return SUCC;
+}
+
+enum rtn_type begin(struct pair *args, struct exp **rtn, struct environ *env) {
+	/* FIXME when we use (begin x 10) while x is undefined, it will still return 10 */
+	*rtn = last_element(eval_sequence(args, env));
+	return SUCC;
+}
+
 enum rtn_type lambda(struct pair *args, struct exp **rtn, struct environ *env) {
 	struct pair *l_args;
 	struct pair *l_body;

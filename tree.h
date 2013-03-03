@@ -18,5 +18,6 @@ struct tree_node {
 
 extern struct exp *tree_find(struct tree_node *root, const char *str);
 extern int tree_insert(struct tree_node **root, struct symbol *sym, struct exp *e, int replace);
+extern void dump(struct tree_node *root); /* for debugging */
 
 #endif /*TREE_H*/
