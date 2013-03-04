@@ -22,3 +22,10 @@
 x				;should be 10
 (yy 200)			;should be ()
 x				;should be 200
+(< 1 2)				;should be #t
+(< 1.2 2)			;should be #t
+(> 1.2 2)			;should be #f
+(<= 0 2)			;should be #t
+(= 2 2.0)			;should be #t
+(>= -1.2 2)			;should be #f
+(>= 1.0 0)			;should be #t

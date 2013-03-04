@@ -87,6 +87,26 @@ int main(int argc, char *argv[]) {
 	s = alloc_symbol("-");
 	define_in_env(base_env, s, (struct exp *)ca);
 
+	ca = alloc_builtin_pro(number_equal);
+	s = alloc_symbol("=");
+	define_in_env(base_env, s, (struct exp *)ca);
+
+	ca = alloc_builtin_pro(more_than);
+	s = alloc_symbol(">");
+	define_in_env(base_env, s, (struct exp *)ca);
+
+	ca = alloc_builtin_pro(less_than);
+	s = alloc_symbol("<");
+	define_in_env(base_env, s, (struct exp *)ca);
+
+	ca = alloc_builtin_pro(more_equal);
+	s = alloc_symbol(">=");
+	define_in_env(base_env, s, (struct exp *)ca);
+
+	ca = alloc_builtin_pro(less_equal);
+	s = alloc_symbol("<=");
+	define_in_env(base_env, s, (struct exp *)ca);
+
 
 
 	ca = alloc_builtin_syntax(user_eval);

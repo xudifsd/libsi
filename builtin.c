@@ -132,6 +132,71 @@ enum rtn_type max(struct pair *args, struct exp **rtn) {
 	}
 }
 
+/* type: 0 for =, 1 for >, 2 for <, 3 for >=, 4 for <= */
+static enum rtn_type wrapper_for_less_more_equal(struct pair *args, struct exp **rtn, int type) {
+	enum rtn_type r_type;
+	int result;
+
+	if ((r_type = check_args(args, 2, 0)) != SUCC)
+		return r_type;
+
+	r_type = sub(args, rtn);
+	if ((r_type = sub(args, rtn)) != SUCC)
+		return r_type;
+
+	switch (type) {
+		case 0 :
+			if (equal_zero((struct number *)*rtn)) result = 1;
+			else result = 0;
+			break;
+		case 1 :
+			if (above_zero((struct number *)*rtn)) result = 1;
+			else result = 0;
+			break;
+		case 2 :
+			if (below_zero((struct number *)*rtn)) result = 1;
+			else result = 0;
+			break;
+		case 3 :
+			if (above_zero((struct number *)*rtn) ||
+					equal_zero((struct number *)*rtn))
+				result = 1;
+			else result = 0;
+			break;
+		case 4 :
+			if (below_zero((struct number *)*rtn) ||
+					equal_zero((struct number *)*rtn))
+				result = 1;
+			else result = 0;
+			break;
+		default :
+			return ERR_TYPE;
+	}
+
+	*rtn = (struct exp *)alloc_bool(result);
+	return SUCC;
+}
+
+enum rtn_type number_equal(struct pair *args, struct exp **rtn) {
+	return wrapper_for_less_more_equal(args, rtn, 0);
+}
+
+enum rtn_type more_than(struct pair *args, struct exp **rtn) {
+	return wrapper_for_less_more_equal(args, rtn, 1);
+}
+
+enum rtn_type less_than(struct pair *args, struct exp **rtn) {
+	return wrapper_for_less_more_equal(args, rtn, 2);
+}
+
+enum rtn_type more_equal(struct pair *args, struct exp **rtn) {
+	return wrapper_for_less_more_equal(args, rtn, 3);
+}
+
+enum rtn_type less_equal(struct pair *args, struct exp **rtn) {
+	return wrapper_for_less_more_equal(args, rtn, 4);
+}
+
 /* *
  * this eval is to exported to user space, it's just wrapper for eval
  * also, by definition, eval should be builtin_pro instead of builtin_syntax

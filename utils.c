@@ -85,3 +85,24 @@ struct exp *last_element(struct pair *head) {
 			return car(p);
 	return NULL; /* avoid compile warning */
 }
+
+int above_zero(struct number *num) {
+	if (is_long(num))
+		return (num->l_value > 0);
+	else
+		return (num->d_value > 0);
+}
+
+int below_zero(struct number *num) {
+	if (is_long(num))
+		return (num->l_value < 0);
+	else
+		return (num->d_value < 0);
+}
+
+int equal_zero(struct number *num) {
+	if (is_long(num))
+		return (num->l_value == 0);
+	else /* FIXME maybe we should not use == in double */
+		return (num->d_value == 0);
+}

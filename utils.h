@@ -10,6 +10,9 @@ extern void print(FILE *port, struct exp *e);
 extern struct pair *map(map_f fun, struct pair *p);
 extern enum rtn_type check_args(struct pair *args, unsigned int nr_arg, int at_least);
 extern struct exp *last_element(struct pair *head);
+extern int above_zero(struct number *num);
+extern int below_zero(struct number *num);
+extern int equal_zero(struct number *num);
 
 static inline struct exp *car(struct pair *p) {
 	return p->car;
