@@ -83,6 +83,10 @@ int main(int argc, char *argv[]) {
 	s = alloc_symbol("apply");
 	define_in_env(base_env, s, (struct exp *)ca);
 
+	ca = alloc_builtin_pro(sub);
+	s = alloc_symbol("-");
+	define_in_env(base_env, s, (struct exp *)ca);
+
 
 
 	ca = alloc_builtin_syntax(user_eval);

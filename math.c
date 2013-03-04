@@ -21,6 +21,7 @@ static struct number *construct_number(long l, double d, int type) {
 	return rtn;
 }
 
+/* FIXME use arguments to distinguish type, insteadt of macro */
 #define template_for_add_mul(name, init, sym) \
 enum rtn_type name(struct pair *args, struct exp **rtn) {\
 	long l_sum = init;\
@@ -90,4 +91,38 @@ enum rtn_type u_cos(struct pair *args, struct exp **rtn) {
 
 enum rtn_type u_tan(struct pair *args, struct exp **rtn) {
 	return wrapper_for_math_function(args, rtn, tan);
+}
+
+enum rtn_type sub(struct pair *args, struct exp **rtn) {
+	double d = 0;
+	long l = 0;
+	int first = 1;
+	struct pair *p;
+	struct number *num;
+	enum rtn_type r_type;
+
+	if ((r_type = check_args(args, 1, 1)) != SUCC)
+		return r_type;
+
+	for_pair(p, args) {
+		if (!is_number(car(p)))
+			return ERR_TYPE;
+		num = (struct number *)car(p);
+		if (is_long(num)) {
+			if (first) {
+				l = num->l_value;
+				first = 0;
+			} else
+				l -= num->l_value;
+		} else if (is_double(num)) {
+			if (first) {
+				d = num->d_value;
+				first = 0;
+			} else
+				d -= num->d_value;
+		} else
+			return ERR_TYPE;
+	}
+	*rtn = (struct exp *)construct_number(l, d, 0);
+	return SUCC;
 }

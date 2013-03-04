@@ -65,5 +65,5 @@ apply.o: apply.c $(header)
 	gcc $(CFLAGS) apply.c
 
 clean:
-	-find . -type f -regex ".*\.o" | xargs rm
+	-rm *.o
 	-rm interpret.c t_tree t_stack t_main
