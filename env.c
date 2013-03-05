@@ -22,31 +22,40 @@ int set_in_env(struct environ *env, struct symbol *sym, struct exp *value) {
 	return 1;
 }
 
-struct exp *find_in_env(struct environ *env, struct symbol *sym) {
-	struct exp *rtn;
+/* return 1 for found, 0 for none */
+int find_in_env(struct environ *env, struct symbol *sym, struct exp **rtn) {
 	struct environ *p;
 	for (p = env; p; p = p->parent) {
-		rtn = tree_find(p->repo, sym->sym);
-		if (rtn)
-			return rtn;
+		if (tree_find(p->repo, sym->sym, rtn))
+			return 1;
 	}
-	return NULL;
+	return 0;
 }
 
 struct environ *extend_env(struct pair *pars, struct pair *args, struct environ *base) {
 	struct pair *p1, *p2;
-	struct exp *e1,  *e2;
+	struct exp *e1, *e2;
 	struct environ *rtn;
 
 	rtn = alloc_environ(base);
 	for (p1 = pars, p2 = args;
-			p1 && p2;
+			p1;
 			p1 = (struct pair *)cdr(p1),
 				p2 = (struct pair *)cdr(p2)) {
 		e1 = car(p1);
-		e2 = car(p2);
 		if (!is_symbol(e1))
 			return NULL;
+		if (!strcmp(((struct symbol *)e1)->sym, "#!rest")) {
+			p1 = (struct pair *)cdr(p1);
+			e1 = car(p1);
+			if (!is_symbol(e1) || cdr(p1) != NULL)
+				return NULL;
+			define_in_env(rtn, (struct symbol *)e1, (struct exp *)p2);
+			break;
+		}
+		if (!p2)
+			return NULL;
+		e2 = car(p2);
 		define_in_env(rtn, (struct symbol *)e1, e2);
 	}
 	return rtn;

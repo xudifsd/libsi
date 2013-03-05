@@ -89,7 +89,8 @@ static void insert_case1(struct tree_node *n) {
 		insert_case2(n);
 }
 
-struct exp *tree_find(struct tree_node *root, const char *str) {
+/* return 1 for found, 0 for none */
+int tree_find(struct tree_node *root, const char *str, struct exp **rtn) {
 	struct tree_node *p = root;
 	int cmp;
 	while (p) {
@@ -98,10 +99,12 @@ struct exp *tree_find(struct tree_node *root, const char *str) {
 			p = p->right;
 		else if (cmp < 0)
 			p = p->left;
-		else
-			return p->value;
+		else {
+			*rtn = p->value;
+			return 1;
+		}
 	}
-	return NULL;
+	return 0;
 }
 
 /* *

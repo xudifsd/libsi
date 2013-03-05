@@ -23,28 +23,25 @@ struct pair *eval_sequence(struct pair *args, struct environ *env) {
  */
 enum rtn_type eval(struct exp *e, struct exp **rtn, struct environ *env) {
 	enum rtn_type type;
-	struct exp *value;
 	if (e == NULL || is_number(e) || is_bool(e)) {
 		*rtn = e;
 		return SUCC;
 	} else if (is_symbol(e)) {
-		value = find_in_env(env, (struct symbol *)e);
-		if (value) {
-			*rtn = value;
+		if (find_in_env(env, (struct symbol *)e, rtn))
 			return SUCC;
-		} else
+		else
 			return ERR_UNBOUND;
 	} else if (is_pair(e)) {
 		struct pair *p = (struct pair *)e;
 		struct exp *ar = car(p);
 		if (is_symbol(ar) || is_pair(ar)) {
-			type = eval(ar, &value, env);
+			type = eval(ar, rtn, env);
 			if (type != SUCC)
 				return type;
 
-			if (is_callable(value)) {
+			if (is_callable(*rtn)) {
 				struct exp *result;
-				struct callable *pro = (struct callable *)value;
+				struct callable *pro = (struct callable *)*rtn;
 
 				if (is_builtin_pro(pro) || is_lambda(pro)) {
 					struct pair *args;
@@ -64,7 +61,7 @@ enum rtn_type eval(struct exp *e, struct exp **rtn, struct environ *env) {
 						return type;
 				} else /* not implemented yet */
 					return ERR_TYPE;
-			} else /* !is_callable(value) */
+			} else /* !is_callable(*rtn) */
 				return ERR_TYPE;
 		} else /* !(is_symbol(ar) || is_pair(ar)) */
 			return ERR_TYPE;

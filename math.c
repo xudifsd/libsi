@@ -1,5 +1,7 @@
 #include "math.h"
 
+/* FIXME we should have code cope with overflow */
+
 /* helper function for add and mul, type 0 for add, 1 for mul */
 static struct number *construct_number(long l, double d, int type) {
 	struct number *rtn;
