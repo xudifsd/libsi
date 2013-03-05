@@ -24,7 +24,8 @@ enum rtn_type apply(struct pair *args, struct exp **rtn) {
 	if (is_lambda(c)) {
 		env = extend_env(c->l_value.pars, r_args, c->l_value.bind);
 
-		result = eval_sequence(c->l_value.body, env);
+		if (eval_sequence(c->l_value.body, env, &result) != SUCC)
+			return ERR_LAMBDA;
 		*rtn = last_element(result);
 		return SUCC;
 	} else if (is_builtin_pro(c))

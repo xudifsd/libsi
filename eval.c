@@ -6,16 +6,13 @@ static struct environ *eval_map_base;
  * ATTENTIOM: eval_map is not a thread-safe function, it use eval_map_base to
  * do the work.
  */
-static inline struct exp *eval_map(struct exp *e) {
-	struct exp *result;
-	eval(e, &result, eval_map_base);
-	/* FIXME we should check return value of eval and act according to it */
-	return result;
+static enum rtn_type eval_map(struct exp *e, struct exp **rtn) {
+	return eval(e, rtn, eval_map_base);
 }
 
-struct pair *eval_sequence(struct pair *args, struct environ *env) {
+enum rtn_type eval_sequence(struct pair *args, struct environ *env, struct pair **rtn) {
 	eval_map_base = env;
-	return map(eval_map, args); /* eval args */
+	return map(eval_map, args, rtn);
 }
 
 /* *
@@ -46,7 +43,8 @@ enum rtn_type eval(struct exp *e, struct exp **rtn, struct environ *env) {
 				if (is_builtin_pro(pro) || is_lambda(pro)) {
 					struct pair *args;
 					struct pair *args_for_apply;
-					args = eval_sequence((struct pair *)cdr(p), env);
+					if ((type = eval_sequence((struct pair *)cdr(p), env, &args)) != SUCC)
+						return type;
 
 					args_for_apply = alloc_pair((struct exp *)args, NULL);
 					args_for_apply = alloc_pair((struct exp *)pro, (struct exp *)args_for_apply);

@@ -48,18 +48,24 @@ void print(FILE *port, struct exp *e) {
 	fputc(' ', port); /* makes output more beautiful */
 }
 
-struct pair *map(map_f fun, struct pair *p) {
-	struct pair *tmp;
-	struct pair *rtn;
+enum rtn_type map(map_f fun, struct pair *args, struct pair **rtn) {
+	struct pair *p;
+	struct pair *value;
+	struct exp *e;
 	struct pair *head = NULL;
 	struct pair **tail = &head;
+	enum rtn_type r_type;
 
-	for_pair(tmp, p) {
-		rtn = alloc_pair(fun(car(tmp)), NULL);
-		*tail = rtn;
-		tail = (struct pair **)&rtn->cdr;
+	for_pair(p, args) {
+		if ((r_type = fun(car(p), &e)) == SUCC) {
+			value = alloc_pair(e, NULL);
+			*tail = value;
+			tail = (struct pair **)&value->cdr;
+		} else
+			return r_type;
 	}
-	return head;
+	*rtn = head;
+	return SUCC;
 }
 
 /* if at_least is not 0, len should be at least nr_arg, not exactly */

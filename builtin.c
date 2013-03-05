@@ -319,9 +319,11 @@ enum rtn_type set(struct pair *args, struct exp **rtn, struct environ *env) {
 }
 
 enum rtn_type begin(struct pair *args, struct exp **rtn, struct environ *env) {
-	/* FIXME when we use (begin x 10) while x is undefined, it will still return 10 */
-	*rtn = last_element(eval_sequence(args, env));
-	return SUCC;
+	struct pair *result;
+	enum rtn_type r_type;
+	if ((r_type = eval_sequence(args, env, &result)) == SUCC)
+		*rtn = last_element(result);
+	return r_type;
 }
 
 enum rtn_type lambda(struct pair *args, struct exp **rtn, struct environ *env) {

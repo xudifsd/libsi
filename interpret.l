@@ -91,6 +91,9 @@ void eval_print(struct exp *in, FILE *out, FILE *err, struct environ *env, int l
 			case ERR_MEM:
 				error(err, "\nMemory error\n");
 				break;
+			case ERR_LAMBDA:
+				error(err, "\nbody of lambda is illegal\n");
+				break;
 		}
 	}
 }
