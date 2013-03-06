@@ -20,7 +20,7 @@ enum rtn_type eval_sequence(struct pair *args, struct environ *env, struct pair 
  */
 enum rtn_type eval(struct exp *e, struct exp **rtn, struct environ *env) {
 	enum rtn_type type;
-	if (e == NULL || is_number(e) || is_bool(e)) {
+	if (e == NULL || is_number(e) || is_bool(e) || is_callable(e)) {
 		*rtn = e;
 		return SUCC;
 	} else if (is_symbol(e)) {
@@ -40,7 +40,7 @@ enum rtn_type eval(struct exp *e, struct exp **rtn, struct environ *env) {
 				struct exp *result;
 				struct callable *pro = (struct callable *)*rtn;
 
-				if (is_builtin_pro(pro) || is_lambda(pro)) {
+				if (is_builtin_pro(pro) || is_lambda(pro) || is_macro(pro)) {
 					struct pair *args;
 					struct pair *args_for_apply;
 					if ((type = eval_sequence((struct pair *)cdr(p), env, &args)) != SUCC)
@@ -49,7 +49,17 @@ enum rtn_type eval(struct exp *e, struct exp **rtn, struct environ *env) {
 					args_for_apply = alloc_pair((struct exp *)args, NULL);
 					args_for_apply = alloc_pair((struct exp *)pro, (struct exp *)args_for_apply);
 
-					return apply(args_for_apply, rtn);
+					type = apply(args_for_apply, &result);
+					if (type != SUCC)
+						return type;
+
+					if (is_macro(pro))
+						return eval(result, rtn, env); /* FIXME is env right? */
+					else {
+						*rtn = result;
+						return type;
+					}
+
 				} else if (is_builtin_syntax(pro)) {
 					type = pro->bs_value((struct pair *)cdr(p), &result, env);
 					if (type == SUCC) {

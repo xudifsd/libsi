@@ -21,10 +21,10 @@ enum rtn_type apply(struct pair *args, struct exp **rtn) {
 	c = (struct callable *)car(args);
 	r_args = (struct pair *)cadr;
 
-	if (is_lambda(c)) {
-		env = extend_env(c->l_value.pars, r_args, c->l_value.bind);
+	if (is_lambda(c) || is_macro(c)) {
+		env = extend_env(c->u_value.pars, r_args, c->u_value.bind);
 
-		if (eval_sequence(c->l_value.body, env, &result) != SUCC)
+		if (eval_sequence(c->u_value.body, env, &result) != SUCC)
 			return ERR_LAMBDA;
 		*rtn = last_element(result);
 		return SUCC;

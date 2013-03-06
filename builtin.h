@@ -28,6 +28,8 @@ extern enum rtn_type define(struct pair *args, struct exp **rtn, struct environ 
 extern enum rtn_type set(struct pair *args, struct exp **rtn, struct environ *env);
 extern enum rtn_type begin(struct pair *args, struct exp **rtn, struct environ *env);
 extern enum rtn_type lambda(struct pair *args, struct exp **rtn, struct environ *env);
+extern enum rtn_type defmacro(struct pair *args, struct exp **rtn, struct environ *env);
+extern enum rtn_type macroexpand(struct pair *args, struct exp **rtn, struct environ *env);
 extern enum rtn_type quote(struct pair *args, struct exp **rtn, struct environ *env);
 extern enum rtn_type backquote(struct pair *args, struct exp **rtn, struct environ *env);
 

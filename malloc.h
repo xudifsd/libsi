@@ -22,5 +22,6 @@ extern struct quote_stack *alloc_quote_stack(struct quote_stack *prev);
 extern struct callable *alloc_builtin_pro(builtin_pro_f fun);
 extern struct callable *alloc_builtin_syntax(builtin_syntax_f fun);
 extern struct callable *alloc_lambda(struct pair *args, struct pair *body, struct environ *bind);
+extern struct callable *alloc_macro(struct pair *pars, struct pair *body, struct environ *bind);
 
 #endif /*MALLOC_H*/

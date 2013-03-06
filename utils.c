@@ -36,12 +36,12 @@ void print(FILE *port, struct exp *e) {
 			fprintf(port, "#<builtin syntax>");
 		else if (is_lambda(c)) {
 			fprintf(port, "#<lambda with pars ");
-			print(port, (struct exp *)c->l_value.pars);
+			print(port, (struct exp *)c->u_value.pars);
 			fprintf(port, ">");
 		} else {
 			/* is_macro(c) */
 			fprintf(port, "#<macro with pars ");
-			print(port, (struct exp *)c->m_value.pars);
+			print(port, (struct exp *)c->u_value.pars);
 			fprintf(port, ">");
 		}
 	}

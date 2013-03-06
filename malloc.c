@@ -107,8 +107,19 @@ struct callable *alloc_lambda(struct pair *pars, struct pair *body, struct envir
 	assert(rtn);
 	rtn->tag = CALLABLE;
 	rtn->type = LAMBDA;
-	rtn->l_value.pars = pars;
-	rtn->l_value.body = body;
-	rtn->l_value.bind = bind;
+	rtn->u_value.pars = pars;
+	rtn->u_value.body = body;
+	rtn->u_value.bind = bind;
+	return rtn;
+}
+
+struct callable *alloc_macro(struct pair *pars, struct pair *body, struct environ *bind) {
+	struct callable *rtn = GC_MALLOC(sizeof(struct callable));
+	assert(rtn);
+	rtn->tag = CALLABLE;
+	rtn->type = MACRO;
+	rtn->u_value.pars = pars;
+	rtn->u_value.body = body;
+	rtn->u_value.bind = bind;
 	return rtn;
 }

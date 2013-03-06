@@ -326,7 +326,8 @@ enum rtn_type begin(struct pair *args, struct exp **rtn, struct environ *env) {
 	return r_type;
 }
 
-enum rtn_type lambda(struct pair *args, struct exp **rtn, struct environ *env) {
+/* type 0 for lamdba, 1 for macro */
+static enum rtn_type wrapper_for_lambda_defmacro(struct pair *args, struct exp **rtn, struct environ *env, int type) {
 	struct pair *l_args;
 	struct pair *l_body;
 	enum rtn_type r_type;
@@ -341,8 +342,79 @@ enum rtn_type lambda(struct pair *args, struct exp **rtn, struct environ *env) {
 
 	l_body = (struct pair *)cdr(args); /* we know from check_args that args should be list */
 
-	*rtn = (struct exp *)alloc_lambda(l_args, l_body, env);
+	if (type)
+		*rtn = (struct exp *)alloc_macro(l_args, l_body, env);
+	else
+		*rtn = (struct exp *)alloc_lambda(l_args, l_body, env);
 	return SUCC;
+}
+
+
+enum rtn_type lambda(struct pair *args, struct exp **rtn, struct environ *env) {
+	return wrapper_for_lambda_defmacro(args, rtn, env, 0);
+}
+
+/* symtax of our defmacro just define a procedure: (defmacro (let args #!rest body) ...) */
+enum rtn_type defmacro(struct pair *args, struct exp **rtn, struct environ *env) {
+	enum rtn_type r_type;
+	struct exp *ar, *adr;
+	struct symbol *name;
+	struct pair *pars;
+	struct pair *r_args;
+	struct exp *macro;
+	if ((r_type = check_args(args, 2, 0)) != SUCC)
+		return r_type;
+
+	ar = car(args);
+	adr = car((struct pair *)cdr(args));
+	if (!is_pair(ar) ||
+			car((struct pair *)ar) == NULL ||
+			!is_symbol(car((struct pair *)ar)) ||
+			!is_pair(cdr((struct pair *)ar)))
+		return ERR_TYPE;
+	name = (struct symbol *)car((struct pair *)ar);
+	pars = (struct pair *)cdr((struct pair *)ar);
+
+	r_args = alloc_pair(adr, NULL);
+	r_args = alloc_pair((struct exp *)pars, (struct exp *)r_args);
+
+	if ((r_type = wrapper_for_lambda_defmacro(r_args, &macro, env, 1)) != SUCC)
+		return r_type;
+	if (!is_callable(macro) || !is_macro((struct callable *)macro))
+		return ERR_TYPE;
+
+	r_args = alloc_pair(macro, NULL);
+	r_args = alloc_pair((struct exp *)name, (struct exp *)r_args);
+	return define(r_args, rtn, env);
+}
+
+enum rtn_type macroexpand(struct pair *args, struct exp **rtn, struct environ *env) {
+	/* we need env, so we pretend to be builtin_syntax */
+	struct exp *ar, *dr;
+	struct exp *value;
+	struct pair *p;
+	struct pair *args_for_apply;
+	enum rtn_type r_type;
+	if ((r_type = check_args(args, 1, 0)) != SUCC)
+		return r_type;
+	if ((r_type = eval((struct exp *)args, &value, env)) != SUCC)
+		return r_type;
+
+	if (!is_pair(value))
+		return ERR_TYPE;
+
+	p = (struct pair *)value;
+	ar = car(p);
+	dr = cdr(p);
+	if ((r_type = eval(ar, &value, env)) != SUCC)
+		return r_type;
+	if (!is_callable(value) && !is_macro((struct callable *)value))
+		return ERR_TYPE;
+
+	/* construct args for apply */
+	args_for_apply = alloc_pair(dr, NULL);
+	args_for_apply = alloc_pair(value, (struct exp *)args_for_apply);
+	return apply(args_for_apply, rtn);
 }
 
 enum rtn_type quote(struct pair *args, struct exp **rtn, struct environ *env) {

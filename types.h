@@ -66,29 +66,21 @@ typedef enum rtn_type (*builtin_pro_f)(struct pair *args, struct exp **rtn);
 
 typedef enum rtn_type (*builtin_syntax_f)(struct pair *args, struct exp **rtn, struct environ *env);
 
-typedef struct lambda_s {
+typedef struct user_defined_s {
 	struct pair *pars;
 	struct pair *body;
 	struct environ *bind;
-} lambda_t;
-
-typedef struct macro_s {
-	struct pair *pars;
-	struct pair *body;
-	struct environ *bind;
-} macro_t;
+} user_defined_t;
 
 struct callable {
 	unsigned long tag;
 	union {
 		builtin_pro_f bp_value;
 		builtin_syntax_f bs_value;
-		lambda_t l_value;
-		macro_t m_value;
+		user_defined_t u_value;
 	};
 	enum callable_type type;
 };
-
 
 
 /* This stack frame is *not* run-time stack,  it's parse-time stack */

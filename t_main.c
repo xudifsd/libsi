@@ -133,6 +133,14 @@ int main(int argc, char *argv[]) {
 	s = alloc_symbol("lambda");
 	define_in_env(base_env, s, (struct exp *)ca);
 
+	ca = alloc_builtin_syntax(defmacro);
+	s = alloc_symbol("defmacro");
+	define_in_env(base_env, s, (struct exp *)ca);
+
+	ca = alloc_builtin_syntax(macroexpand);
+	s = alloc_symbol("macroexpand");
+	define_in_env(base_env, s, (struct exp *)ca);
+
 	ca = alloc_builtin_syntax(quote);
 	s = alloc_symbol("quote");
 	define_in_env(base_env, s, (struct exp *)ca);
