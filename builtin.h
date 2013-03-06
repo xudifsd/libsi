@@ -33,6 +33,7 @@ extern enum rtn_type positive_p(struct pair *args, struct exp **rtn);
 extern enum rtn_type negative_p(struct pair *args, struct exp **rtn);
 extern enum rtn_type odd_p(struct pair *args, struct exp **rtn);
 extern enum rtn_type even_p(struct pair *args, struct exp **rtn);
+extern enum rtn_type eq_p(struct pair *args, struct exp **rtn);
 extern enum rtn_type u_print(struct pair *args, struct exp **rtn);
 extern enum rtn_type user_eval(struct pair *args, struct exp **rtn, struct environ *env);
 extern enum rtn_type u_if(struct pair *args, struct exp **rtn, struct environ *env);

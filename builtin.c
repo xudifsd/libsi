@@ -369,6 +369,39 @@ enum rtn_type even_p(struct pair *args, struct exp **rtn) {
 	return not(p, rtn);
 }
 
+enum rtn_type eq_p(struct pair *args, struct exp **rtn) {
+	int result = 0;
+	struct exp *ar, *adr;
+	enum rtn_type r_type;
+
+	if ((r_type = check_args(args, 2, 0)) != SUCC)
+		return r_type;
+
+	ar = car(args);
+	adr = car((struct pair *)cdr(args));
+	if (ar == NULL ||
+			is_pair(ar) ||
+			is_callable(ar) ||
+			is_bool(ar)) /* because boolean is static allocated */
+		result = (ar == adr);
+	else if (is_number(ar) && is_number(adr)) {
+		struct number *num1, *num2;
+		num1 = (struct number *)ar;
+		num2 = (struct number *)adr;
+		if (is_long(num1) && is_long(num2))
+			result = (num1->l_value == num2->l_value);
+		else if (is_double(num1) && is_double(num2))
+			result = (num1->d_value == num2->d_value);
+	} else if (is_symbol(ar) && is_symbol(adr)) {
+		struct symbol *sym1, *sym2;
+		sym1 = (struct symbol *)ar;
+		sym2 = (struct symbol *)adr;
+		result = !strcmp(sym1->sym, sym2->sym);
+	}
+	*rtn = (struct exp *)alloc_bool(result);
+	return SUCC;
+}
+
 enum rtn_type u_print(struct pair *args, struct exp **rtn) {
 	enum rtn_type r_type;
 
