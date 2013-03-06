@@ -110,6 +110,26 @@ int main(int argc, char *argv[]) {
 	s = alloc_symbol("null?");
 	define_in_env(base_env, s, (struct exp *)ca);
 
+	ca = alloc_builtin_pro(number_p);
+	s = alloc_symbol("number?");
+	define_in_env(base_env, s, (struct exp *)ca);
+
+	ca = alloc_builtin_pro(symbol_p);
+	s = alloc_symbol("symbol?");
+	define_in_env(base_env, s, (struct exp *)ca);
+
+	ca = alloc_builtin_pro(pair_p);
+	s = alloc_symbol("pair?");
+	define_in_env(base_env, s, (struct exp *)ca);
+
+	ca = alloc_builtin_pro(procedure_p);
+	s = alloc_symbol("procedure?");
+	define_in_env(base_env, s, (struct exp *)ca);
+
+	ca = alloc_builtin_pro(bool_p);
+	s = alloc_symbol("boolean?");
+	define_in_env(base_env, s, (struct exp *)ca);
+
 	ca = alloc_builtin_pro(u_print);
 	s = alloc_symbol("print");
 	define_in_env(base_env, s, (struct exp *)ca);

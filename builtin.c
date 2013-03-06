@@ -215,6 +215,74 @@ enum rtn_type null_p(struct pair *args, struct exp **rtn) {
 	return SUCC;
 }
 
+static int is_procedure(struct exp *e) {
+	return (is_callable(e) &&
+			(is_lambda((struct callable *)e) ||
+			is_builtin_pro((struct callable *)e)));
+}
+
+static enum rtn_type wrapper_for_type_p(struct pair *args, struct exp **rtn, int type) {
+	enum rtn_type r_type;
+
+	if ((r_type = check_args(args, 1, 0)) != SUCC)
+		return r_type;
+	switch (type) {
+		case NUMBER :
+			if (is_number(car(args)))
+				*rtn = (struct exp *)alloc_bool(1);
+			else
+				*rtn = (struct exp *)alloc_bool(0);
+			break;
+		case SYMBOL :
+			if (is_symbol(car(args)))
+				*rtn = (struct exp *)alloc_bool(1);
+			else
+				*rtn = (struct exp *)alloc_bool(0);
+			break;
+		case PAIR :
+			if (is_pair(car(args)))
+				*rtn = (struct exp *)alloc_bool(1);
+			else
+				*rtn = (struct exp *)alloc_bool(0);
+			break;
+		case CALLABLE :
+			if (is_procedure(car(args)))
+				*rtn = (struct exp *)alloc_bool(1);
+			else
+				*rtn = (struct exp *)alloc_bool(0);
+			break;
+		case BOOL :
+			if (is_bool(car(args)))
+				*rtn = (struct exp *)alloc_bool(1);
+			else
+				*rtn = (struct exp *)alloc_bool(0);
+			break;
+		default :
+			return ERR_TYPE;
+	}
+	return SUCC;
+}
+
+enum rtn_type number_p(struct pair *args, struct exp **rtn) {
+	return wrapper_for_type_p(args, rtn, NUMBER);
+}
+
+enum rtn_type symbol_p(struct pair *args, struct exp **rtn) {
+	return wrapper_for_type_p(args, rtn, SYMBOL);
+}
+
+enum rtn_type pair_p(struct pair *args, struct exp **rtn) {
+	return wrapper_for_type_p(args, rtn, PAIR);
+}
+
+enum rtn_type procedure_p(struct pair *args, struct exp **rtn) {
+	return wrapper_for_type_p(args, rtn, CALLABLE);
+}
+
+enum rtn_type bool_p(struct pair *args, struct exp **rtn) {
+	return wrapper_for_type_p(args, rtn, BOOL);
+}
+
 enum rtn_type u_print(struct pair *args, struct exp **rtn) {
 	enum rtn_type r_type;
 
