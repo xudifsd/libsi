@@ -29,21 +29,3 @@ x				;should be 200
 (= 2 2.0)			;should be #t
 (>= -1.2 2)			;should be #f
 (>= 1.0 0)			;should be #t
-(define (map fun lst)
-  (if (null? lst)
-    '()
-     (cons
-      (fun (car lst))
-      (map fun (cdr lst)))))	;should be ()
-(map (lambda (x) (* x 3))
-        '(2 3 4 5))		;should be (6 9 12 15)
-(define (cadr lst)
-  (car (cdr lst)))		;should be ()
-(defmacro (let args #!rest body)
-  `((lambda ,(map car args)
-      ,@body)
-    ,@(map cadr args)))		;should be ()
-(define body
-  '(let ((x -3)) (+ 2 x)))	;should be ()
-(eval body)			;should be -1
-(macroexpand body)		;shoud be ((lambda (x) (+ 2 x)) -3)
