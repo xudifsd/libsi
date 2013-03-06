@@ -43,4 +43,7 @@ x				;should be 200
   `((lambda ,(map car args)
       ,@body)
     ,@(map cadr args)))		;should be ()
-(let ((x -3)) (+ 2 x))		;should be -1
+(define body
+  '(let ((x -3)) (+ 2 x)))	;should be ()
+(eval body)			;should be -1
+(macroexpand body)		;shoud be ((lambda (x) (+ 2 x)) -3)

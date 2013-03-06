@@ -412,6 +412,35 @@ enum rtn_type defmacro(struct pair *args, struct exp **rtn, struct environ *env)
 	return define(r_args, rtn, env);
 }
 
+enum rtn_type macroexpand(struct pair *args, struct exp **rtn, struct environ *env) {
+	/* we need env, so we pretend to be builtin_syntax */
+	struct exp *ar, *dr;
+	struct exp *value;
+	struct pair *p;
+	struct pair *args_for_apply;
+	enum rtn_type r_type;
+	if ((r_type = check_args(args, 1, 0)) != SUCC)
+		return r_type;
+	if ((r_type = eval(car(args), &value, env)) != SUCC)
+		return r_type;
+
+	if (!is_pair(value))
+		return ERR_TYPE;
+
+	p = (struct pair *)value;
+	ar = car(p);
+	dr = cdr(p);
+	if ((r_type = eval(ar, &value, env)) != SUCC)
+		return r_type;
+	if (!is_callable(value) && !is_macro((struct callable *)value))
+		return ERR_TYPE;
+
+	/* construct args for apply */
+	args_for_apply = alloc_pair(dr, NULL);
+	args_for_apply = alloc_pair(value, (struct exp *)args_for_apply);
+	return apply(args_for_apply, rtn);
+}
+
 enum rtn_type quote(struct pair *args, struct exp **rtn, struct environ *env) {
 	enum rtn_type r_type;
 	if ((r_type = check_args(args, 1, 0)) != SUCC)
