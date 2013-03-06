@@ -52,8 +52,12 @@ enum rtn_type eval(struct exp *e, struct exp **rtn, struct environ *env) {
 				if (is_builtin_pro(pro) || is_lambda(pro) || is_macro(pro)) {
 					struct pair *args;
 					struct pair *args_for_apply;
-					if ((type = eval_sequence((struct pair *)cdr(p), env, &args)) != SUCC)
-						return type;
+					if (!is_macro(pro)) {
+						if ((type = eval_sequence((struct pair *)cdr(p), env, &args)) != SUCC)
+							return type;
+					} else
+						args = (struct pair *)cdr(p);
+
 
 					args_for_apply = alloc_pair((struct exp *)args, NULL);
 					args_for_apply = alloc_pair((struct exp *)pro, (struct exp *)args_for_apply);
