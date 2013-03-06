@@ -103,6 +103,10 @@ static inline int is_bool(struct exp *var) {
 	return (var && (var->tag & BOOL));
 }
 
+static inline int is_true(struct bool *var) {
+	return (var && var->value);
+}
+
 static inline int is_number(struct exp *var) {
 	return (var && (var->tag & NUMBER));
 }

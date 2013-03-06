@@ -283,6 +283,92 @@ enum rtn_type bool_p(struct pair *args, struct exp **rtn) {
 	return wrapper_for_type_p(args, rtn, BOOL);
 }
 
+enum rtn_type list_p(struct pair *args, struct exp **rtn) {
+	struct exp *p;
+
+	/* length require args to be list, we take advantage of this */
+	if (length(args, &p) != SUCC)
+		*rtn = (struct exp *)alloc_bool(0);
+	else
+		*rtn = (struct exp *)alloc_bool(1);
+	return SUCC;
+}
+
+enum rtn_type not(struct pair *args, struct exp **rtn) {
+	enum rtn_type r_type;
+
+	if ((r_type = check_args(args, 1, 0)) != SUCC)
+		return r_type;
+
+	if (is_bool(car(args)) && !is_true((struct bool *)car(args)))
+		*rtn = (struct exp *)alloc_bool(1);
+	else
+		*rtn = (struct exp *)alloc_bool(0);
+
+	return SUCC;
+}
+
+enum rtn_type positive_p(struct pair *args, struct exp **rtn) {
+	int result;
+	struct number *num;
+	enum rtn_type r_type;
+
+	if ((r_type = check_args(args, 1, 0)) != SUCC)
+		return r_type;
+
+	if (!is_number(car(args)))
+		return ERR_TYPE;
+	num = (struct number *)car(args);
+	if (is_double(num))
+		result = (num->d_value > 0);
+	else if (is_long(num))
+		result = (num->l_value > 0);
+
+	*rtn = (struct exp *)alloc_bool(result);
+	return SUCC;
+}
+
+enum rtn_type negative_p(struct pair *args, struct exp **rtn) {
+	struct exp *tmp;
+	struct pair *p;
+	enum rtn_type r_type;
+	if ((r_type = positive_p(args, &tmp) != SUCC))
+		return r_type;
+
+	p = alloc_pair(tmp, NULL);
+	return not(p, rtn);
+}
+
+enum rtn_type odd_p(struct pair *args, struct exp **rtn) {
+	int result;
+	struct number *num;
+	enum rtn_type r_type;
+
+	if ((r_type = check_args(args, 1, 0)) != SUCC)
+		return r_type;
+
+	if (!is_number(car(args)))
+		return ERR_TYPE;
+
+	num = (struct number *)car(args);
+	if (!is_long(num))
+		return ERR_TYPE;
+	result = num->l_value % 2;
+	*rtn = (struct exp *)alloc_bool(result);
+	return SUCC;
+}
+
+enum rtn_type even_p(struct pair *args, struct exp **rtn) {
+	struct exp *tmp;
+	struct pair *p;
+	enum rtn_type r_type;
+	if ((r_type = odd_p(args, &tmp) != SUCC))
+		return r_type;
+
+	p = alloc_pair(tmp, NULL);
+	return not(p, rtn);
+}
+
 enum rtn_type u_print(struct pair *args, struct exp **rtn) {
 	enum rtn_type r_type;
 

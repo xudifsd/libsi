@@ -130,6 +130,30 @@ int main(int argc, char *argv[]) {
 	s = alloc_symbol("boolean?");
 	define_in_env(base_env, s, (struct exp *)ca);
 
+	ca = alloc_builtin_pro(list_p);
+	s = alloc_symbol("list?");
+	define_in_env(base_env, s, (struct exp *)ca);
+
+	ca = alloc_builtin_pro(not);
+	s = alloc_symbol("not");
+	define_in_env(base_env, s, (struct exp *)ca);
+
+	ca = alloc_builtin_pro(positive_p);
+	s = alloc_symbol("positive?");
+	define_in_env(base_env, s, (struct exp *)ca);
+
+	ca = alloc_builtin_pro(negative_p);
+	s = alloc_symbol("negative?");
+	define_in_env(base_env, s, (struct exp *)ca);
+
+	ca = alloc_builtin_pro(odd_p);
+	s = alloc_symbol("odd?");
+	define_in_env(base_env, s, (struct exp *)ca);
+
+	ca = alloc_builtin_pro(even_p);
+	s = alloc_symbol("even?");
+	define_in_env(base_env, s, (struct exp *)ca);
+
 	ca = alloc_builtin_pro(u_print);
 	s = alloc_symbol("print");
 	define_in_env(base_env, s, (struct exp *)ca);
