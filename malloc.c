@@ -67,12 +67,20 @@ struct pair *alloc_pair(struct exp *car, struct exp *cdr) {
 	return rtn;
 }
 
-struct stack_frame *alloc_stack(struct stack_frame *prev) {
+struct stack_frame *alloc_stack_frame(struct stack_frame *prev) {
 	struct stack_frame *rtn = (struct stack_frame *)GC_MALLOC(sizeof(struct stack_frame));
 	assert(rtn);
 	rtn->prev = prev;
 	rtn->head = NULL;
 	rtn->tail = &rtn->head;
+	return rtn;
+}
+
+struct stack *alloc_stack(struct stack *prev) {
+	struct stack *rtn = (struct stack *)GC_MALLOC(sizeof(struct stack));
+	assert(rtn);
+	rtn->prev = prev;
+	rtn->env = NULL;
 	return rtn;
 }
 

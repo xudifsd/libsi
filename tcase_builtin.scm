@@ -29,3 +29,11 @@ x				;should be 200
 (= 2 2.0)			;should be #t
 (>= -1.2 2)			;should be #f
 (>= 1.0 0)			;should be #t
+(define (my-map fun lst)
+  (if (null? lst)
+    '()
+     (cons
+      (fun (car lst))
+      (my-map fun (cdr lst)))))	;should be ()
+(my-map (lambda (x) (* x 3))
+        '(2 3 4 5))		;should be (6 9 12 15)

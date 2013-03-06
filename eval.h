@@ -4,6 +4,7 @@
 #include "env.h"
 #include "malloc.h"
 #include "types.h"
+#include "stack.h"
 #include "apply.h"
 
 extern enum rtn_type eval(struct exp *e, struct exp **rtn, struct environ *env);

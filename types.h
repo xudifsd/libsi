@@ -60,7 +60,7 @@ enum callable_type {BUILTIN_SYNTAX, BUILTIN_PRO, LAMBDA, MACRO};
  * should have this prototype, which count contains the number of args
  * */
 
-enum rtn_type {SUCC, ERR_ARGC, ERR_TYPE, ERR_UNBOUND, ERR_MATH, ERR_ENV, ERR_MEM, ERR_LAMBDA};
+enum rtn_type {SUCC, ERR_ARGC, ERR_TYPE, ERR_UNBOUND, ERR_MATH, ERR_ENV, ERR_MEM, ERR_USER_PRO};
 
 typedef enum rtn_type (*builtin_pro_f)(struct pair *args, struct exp **rtn);
 
@@ -95,6 +95,11 @@ struct quote_stack {
 	struct quote_stack *prev;
 };
 
+/* this is for eval_map_base, FIXME share code with stack_frame */
+struct stack {
+	struct environ *env;
+	struct stack *prev;
+};
 
 static inline int is_bool(struct exp *var) {
 	return (var && (var->tag & BOOL));

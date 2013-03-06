@@ -107,6 +107,14 @@ int main(int argc, char *argv[]) {
 	s = alloc_symbol("<=");
 	define_in_env(base_env, s, (struct exp *)ca);
 
+	ca = alloc_builtin_pro(null_p);
+	s = alloc_symbol("null?");
+	define_in_env(base_env, s, (struct exp *)ca);
+
+	ca = alloc_builtin_pro(u_print);
+	s = alloc_symbol("print");
+	define_in_env(base_env, s, (struct exp *)ca);
+
 
 
 	ca = alloc_builtin_syntax(user_eval);

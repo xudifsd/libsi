@@ -1,7 +1,8 @@
 #include "eval.h"
 #include "utils.h"
 
-static struct environ *eval_map_base;
+static struct environ *eval_map_base = NULL;
+static struct stack *top = NULL;
 /* *
  * ATTENTIOM: eval_map is not a thread-safe function, it use eval_map_base to
  * do the work.
@@ -11,8 +12,16 @@ static enum rtn_type eval_map(struct exp *e, struct exp **rtn) {
 }
 
 enum rtn_type eval_sequence(struct pair *args, struct environ *env, struct pair **rtn) {
+	enum rtn_type r_type;
+	push_stack(&top);
+	top->env = eval_map_base;
 	eval_map_base = env;
-	return map(eval_map, args, rtn);
+
+	r_type = map(eval_map, args, rtn);
+
+	eval_map_base = top->env;
+	pop_stack(&top);
+	return r_type;
 }
 
 /* *

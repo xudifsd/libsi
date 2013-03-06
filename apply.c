@@ -25,7 +25,7 @@ enum rtn_type apply(struct pair *args, struct exp **rtn) {
 		env = extend_env(c->u_value.pars, r_args, c->u_value.bind);
 
 		if (eval_sequence(c->u_value.body, env, &result) != SUCC)
-			return ERR_LAMBDA;
+			return ERR_USER_PRO;
 		*rtn = last_element(result);
 		return SUCC;
 	} else if (is_builtin_pro(c))

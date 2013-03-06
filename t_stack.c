@@ -15,7 +15,7 @@ int main(int argc, char *argv[]) {
 	struct symbol *s;
 	struct number *n;
 
-	push_stack(&top);
+	push_stack_frame(&top);
 
 	s = alloc_symbol("+");
 	append_stack(top, (struct exp *)s);
@@ -23,7 +23,7 @@ int main(int argc, char *argv[]) {
 	n = alloc_long(5);
 	append_stack(top, (struct exp *)n);
 
-	push_stack(&top);
+	push_stack_frame(&top);
 
 	s = alloc_symbol("*");
 	append_stack(top, (struct exp *)s);
@@ -35,7 +35,7 @@ int main(int argc, char *argv[]) {
 	append_stack(top, (struct exp *)n);
 
 	p = top->head;
-	pop_stack(&top);
+	pop_stack_frame(&top);
 	append_stack(top, (struct exp *)p);
 
 	n = alloc_long(10);

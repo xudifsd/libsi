@@ -22,6 +22,8 @@ extern enum rtn_type more_than(struct pair *args, struct exp **rtn);
 extern enum rtn_type less_than(struct pair *args, struct exp **rtn);
 extern enum rtn_type more_equal(struct pair *args, struct exp **rtn);
 extern enum rtn_type less_equal(struct pair *args, struct exp **rtn);
+extern enum rtn_type null_p(struct pair *args, struct exp **rtn);
+extern enum rtn_type u_print(struct pair *args, struct exp **rtn);
 extern enum rtn_type user_eval(struct pair *args, struct exp **rtn, struct environ *env);
 extern enum rtn_type u_if(struct pair *args, struct exp **rtn, struct environ *env);
 extern enum rtn_type define(struct pair *args, struct exp **rtn, struct environ *env);

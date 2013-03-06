@@ -197,6 +197,30 @@ enum rtn_type less_equal(struct pair *args, struct exp **rtn) {
 	return wrapper_for_less_more_equal(args, rtn, 4);
 }
 
+enum rtn_type null_p(struct pair *args, struct exp **rtn) {
+	enum rtn_type r_type;
+
+	if ((r_type = check_args(args, 1, 0)) != SUCC)
+		return r_type;
+
+	if (car(args) == NULL)
+		*rtn = (struct exp *)alloc_bool(1);
+	else
+		*rtn = (struct exp *)alloc_bool(0);
+	return SUCC;
+}
+
+enum rtn_type u_print(struct pair *args, struct exp **rtn) {
+	enum rtn_type r_type;
+
+	if ((r_type = check_args(args, 1, 0)) != SUCC)
+		return r_type;
+
+	print(stdout, car(args));
+	*rtn = NULL;
+	return SUCC;
+}
+
 /* *
  * this eval is to exported to user space, it's just wrapper for eval
  * also, by definition, eval should be builtin_pro instead of builtin_syntax

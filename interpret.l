@@ -91,8 +91,8 @@ void eval_print(struct exp *in, FILE *out, FILE *err, struct environ *env, int l
 			case ERR_MEM:
 				error(err, "\nMemory error\n");
 				break;
-			case ERR_LAMBDA:
-				error(err, "\nbody of lambda is illegal\n");
+			case ERR_USER_PRO:
+				error(err, "\nbody of lambda or macro is illegal\n");
 				break;
 		}
 	}
@@ -111,31 +111,31 @@ int interpret(FILE *in, FILE *out, FILE *err, struct environ *base_env) {
 		rtn = yylex();
 		switch (rtn) {
 			case PARSE_QUOTE:
-				push_stack(&top);
+				push_stack_frame(&top);
 				s = alloc_symbol("quote");
 				append_stack(top, (struct exp *)s);
 				push_quote_stack(&quote_top);
 				break;
 			case PARSE_BACKQUOTE:
-				push_stack(&top);
+				push_stack_frame(&top);
 				s = alloc_symbol("backquote");
 				append_stack(top, (struct exp *)s);
 				push_quote_stack(&quote_top);
 				break;
 			case PARSE_UNQUOTE:
-				push_stack(&top);
+				push_stack_frame(&top);
 				s = alloc_symbol("unquote");
 				append_stack(top, (struct exp *)s);
 				push_quote_stack(&quote_top);
 				break;
 			case PARSE_QUOTESPLICE:
-				push_stack(&top);
+				push_stack_frame(&top);
 				s = alloc_symbol("quotesplice");
 				append_stack(top, (struct exp *)s);
 				push_quote_stack(&quote_top);
 				break;
 			case PARSE_LB:
-				push_stack(&top);
+				push_stack_frame(&top);
 				if (quote_top)
 					quote_top->nest++;
 				break;
@@ -150,13 +150,13 @@ int interpret(FILE *in, FILE *out, FILE *err, struct environ *base_env) {
 							pop_quote_stack(&quote_top);
 
 							cur = top->head;
-							pop_stack(&top);
+							pop_stack_frame(&top);
 							append_stack(top, (struct exp *)cur);
 						}
 					}
 
 					cur = top->head;
-					pop_stack(&top);
+					pop_stack_frame(&top);
 
 					if (top)
 						append_stack(top, (struct exp *)cur);
@@ -177,7 +177,7 @@ int interpret(FILE *in, FILE *out, FILE *err, struct environ *base_env) {
 						pop_quote_stack(&quote_top);
 
 						cur = top->head;
-						pop_stack(&top);
+						pop_stack_frame(&top);
 						if (top)
 							append_stack(top, (struct exp *)cur);
 						else
