@@ -34,6 +34,8 @@ enum rtn_type name(struct pair *args, struct exp **rtn) {\
 		return ERR_ARGC;\
 \
 	for_pair(p, args) {\
+		if (!is_pair(cdr(p)) && cdr(p) != NULL)\
+			return ERR_TYPE;\
 		if (!is_number(p->car))\
 			return ERR_TYPE;\
 		num = (struct number *)(p->car);\
@@ -107,6 +109,8 @@ enum rtn_type sub(struct pair *args, struct exp **rtn) {
 		return r_type;
 
 	for_pair(p, args) {
+		if (!is_pair(cdr(p)) && cdr(p) != NULL)
+			return ERR_TYPE;
 		if (!is_number(car(p)))
 			return ERR_TYPE;
 		num = (struct number *)car(p);

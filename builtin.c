@@ -13,8 +13,11 @@ enum rtn_type length(struct pair *args, struct exp **rtn) {
 
 	if (!is_pair(r_args))
 		return ERR_TYPE;
-	for_pair(p, (struct pair *)r_args)
+	for_pair(p, (struct pair *)r_args) {
+		if (!is_pair(cdr(p)) && cdr(p) != NULL)
+			return ERR_TYPE;
 		len++;
+	}
 	*rtn = (struct exp *)alloc_long(len);
 	return SUCC;
 }
@@ -76,6 +79,8 @@ static enum rtn_type min_max(struct pair *args, struct pair **rtn) {
 		return r_type;
 
 	for_pair(p, args) {
+		if (!is_pair(cdr(p)) && cdr(p) != NULL)
+			return ERR_TYPE;
 		e = car(p);
 		if (e && is_number(e)) {
 			num = (struct number *)e;
@@ -346,7 +351,7 @@ enum rtn_type begin(struct pair *args, struct exp **rtn, struct environ *env) {
 	struct pair *result;
 	enum rtn_type r_type;
 	if ((r_type = eval_sequence(args, env, &result)) == SUCC)
-		*rtn = last_element(result);
+		return last_element(result, rtn);
 	return r_type;
 }
 
@@ -472,6 +477,8 @@ enum rtn_type backquote(struct pair *args, struct exp **rtn, struct environ *env
 		args = (struct pair *)car(args);
 
 		for_pair(p, args) {
+			if (!is_pair(cdr(p)) && cdr(p) != NULL)
+				return ERR_TYPE;
 			ar = car(p);
 			if (is_pair(ar)) {
 				aar = car((struct pair *)ar);
@@ -490,8 +497,11 @@ enum rtn_type backquote(struct pair *args, struct exp **rtn, struct environ *env
 					/* direct tail to the right place */
 					struct pair *tmp;
 					struct exp **tmp_tail;
-					for_pair(tmp, (struct pair *)result)
+					for_pair(tmp, (struct pair *)result) {
+						if (!is_pair(cdr(tmp)) && cdr(tmp) != NULL)
+							return ERR_TYPE;
 						tmp_tail = &tmp->cdr;
+					}
 					tail = tmp_tail;
 				} else {
 					new = alloc_pair(ar, NULL); //makes call legal

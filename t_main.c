@@ -9,8 +9,7 @@
 
 /* *
  * this is the most basic scheme repl, compile it and run ./t_main
- * and then input something like '(+ 3 12 (* 32 2))', it will output 79, we
- * only support '+' and '*'
+ * and then input something like '(+ 3 12 (* 32 2))', it will output 79
  */
 int main(int argc, char *argv[]) {
 	struct environ *base_env;

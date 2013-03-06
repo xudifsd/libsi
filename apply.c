@@ -26,8 +26,7 @@ enum rtn_type apply(struct pair *args, struct exp **rtn) {
 
 		if (eval_sequence(c->u_value.body, env, &result) != SUCC)
 			return ERR_USER_PRO;
-		*rtn = last_element(result);
-		return SUCC;
+		return last_element(result, rtn);
 	} else if (is_builtin_pro(c))
 		return c->bp_value(r_args, rtn);
 	else

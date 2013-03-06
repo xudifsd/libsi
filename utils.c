@@ -16,8 +16,10 @@ void print(FILE *port, struct exp *e) {
 	}
 	else if (is_pair(e)) {
 		fprintf(port, "(");
-		for_pair(p, (struct pair *)e)
+		for_pair(p, (struct pair *)e) {
+			assert(is_pair(cdr(p)) || cdr(p) == NULL);
 			print(port, (struct exp *)p->car);
+		}
 		fprintf(port, "\b)");
 	} else if (is_number(e)) {
 		n = (struct number *)e;
@@ -57,6 +59,8 @@ enum rtn_type map(map_f fun, struct pair *args, struct pair **rtn) {
 	enum rtn_type r_type;
 
 	for_pair(p, args) {
+		if (!is_pair(cdr(p)) && cdr(p) != NULL)
+			return ERR_TYPE;
 		if ((r_type = fun(car(p), &e)) == SUCC) {
 			value = alloc_pair(e, NULL);
 			*tail = value;
@@ -73,8 +77,11 @@ enum rtn_type check_args(struct pair *args, unsigned int nr_arg, int at_least) {
 	unsigned int len = 0;
 	struct pair *p;
 
-	for_pair(p, args)
+	for_pair(p, args) {
+		if (!is_pair(cdr(p)) && cdr(p) != NULL)
+			return ERR_TYPE;
 		len++;
+	}
 
 	if (at_least && len < nr_arg)
 		return ERR_ARGC;
@@ -84,12 +91,17 @@ enum rtn_type check_args(struct pair *args, unsigned int nr_arg, int at_least) {
 		return SUCC;
 }
 
-struct exp *last_element(struct pair *head) {
+enum rtn_type last_element(struct pair *head, struct exp **rtn) {
 	struct pair *p;
-	for_pair(p, head)
-		if (cdr(p) == NULL)
-			return car(p);
-	return NULL; /* avoid compile warning */
+	for_pair(p, head) {
+		if (!is_pair(cdr(p)) && cdr(p) != NULL)
+			return ERR_TYPE;
+		if (cdr(p) == NULL) {
+			*rtn = car(p);
+			return SUCC;
+		}
+	}
+	return ERR_TYPE;
 }
 
 int above_zero(struct number *num) {
