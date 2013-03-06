@@ -1,5 +1,4 @@
-#ifndef MALLOC_H
-#define  MALLOC_H
+#pragma once
 
 #include <gc.h>	/* bwd-gc */
 #include <string.h>
@@ -24,5 +23,3 @@ extern struct callable *alloc_builtin_pro(builtin_pro_f fun);
 extern struct callable *alloc_builtin_syntax(builtin_syntax_f fun);
 extern struct callable *alloc_lambda(struct pair *args, struct pair *body, struct environ *bind);
 extern struct callable *alloc_macro(struct pair *pars, struct pair *body, struct environ *bind);
-
-#endif /*MALLOC_H*/

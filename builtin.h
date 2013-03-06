@@ -1,5 +1,4 @@
-#ifndef BUILTIN_H
-#define  BUILTIN_H
+#pragma once
 
 #include <string.h>
 #include <float.h> /* get DBL_MAX */
@@ -34,5 +33,3 @@ extern enum rtn_type defmacro(struct pair *args, struct exp **rtn, struct enviro
 extern enum rtn_type macroexpand(struct pair *args, struct exp **rtn, struct environ *env);
 extern enum rtn_type quote(struct pair *args, struct exp **rtn, struct environ *env);
 extern enum rtn_type backquote(struct pair *args, struct exp **rtn, struct environ *env);
-
-#endif /*BUILTIN_H*/

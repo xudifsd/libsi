@@ -1,6 +1,4 @@
-#ifndef TYPES_H
-#define TYPES_H
-
+#pragma once
 
 struct environ {
 	struct environ *parent;
@@ -144,4 +142,3 @@ static inline int is_lambda(struct callable *var) {
 static inline int is_macro(struct callable *var) {
 	return (var && (var->type == MACRO));
 }
-#endif /* TYPES_H */

@@ -1,8 +1,8 @@
-#ifndef TREE_H
-#define  TREE_H
+#pragma once
 
 #include <string.h>
 #include "types.h"
+#include "utils.h"
 
 enum tree_color {BLACK, RED};
 
@@ -19,5 +19,3 @@ struct tree_node {
 extern int tree_find(struct tree_node *root, const char *str, struct exp **rtn);
 extern int tree_insert(struct tree_node **root, struct symbol *sym, struct exp *e, int replace);
 extern void dump(struct tree_node *root); /* for debugging */
-
-#endif /*TREE_H*/

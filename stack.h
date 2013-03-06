@@ -1,5 +1,4 @@
-#ifndef STACK_H
-#define  STACK_H
+#pragma once
 
 #include "types.h"
 
@@ -12,4 +11,3 @@ extern void pop_quote_stack(struct quote_stack **top);
 
 extern void push_stack(struct stack **f);
 extern void pop_stack(struct stack **f);
-#endif /*STACK_H*/

@@ -1,5 +1,4 @@
-#ifndef APPLY_H
-#define  APPLY_H
+#pragma once
 
 #include "types.h"
 #include "eval.h"
@@ -7,5 +6,3 @@
 #include "env.h"
 
 extern enum rtn_type apply(struct pair *args, struct exp **rtn);
-
-#endif /*APPLY_H*/

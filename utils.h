@@ -1,5 +1,4 @@
-#ifndef UTILS_H
-#define  UTILS_H
+#pragma once
 
 #include <stdio.h>
 #include "types.h"
@@ -21,5 +20,3 @@ static inline struct exp *car(struct pair *p) {
 static inline struct exp *cdr(struct pair *p) {
 	return p->cdr;
 }
-
-#endif /*UTILS_H*/

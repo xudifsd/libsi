@@ -1,5 +1,4 @@
-#ifndef INTERPRET_H
-#define  INTERPRET_H
+#pragma once
 
 #include <stdio.h>
 #include <string.h>
@@ -11,5 +10,3 @@
 #include "eval.h"
 
 extern int interpret(FILE *in, FILE *out, FILE *err, struct environ *base_env);
-
-#endif /*INTERPRET_H*/
