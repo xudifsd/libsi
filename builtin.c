@@ -433,6 +433,58 @@ enum rtn_type u_print(struct pair *args, struct exp **rtn) {
 	return SUCC;
 }
 
+enum rtn_type u_abs(struct pair *args, struct exp **rtn) {
+	struct exp *result;
+	struct number *num;
+	enum rtn_type r_type;
+
+	if ((r_type = positive_p(args, &result)) != SUCC)
+		return r_type;
+
+	num = (struct number *)car(args);
+	if (is_bool(result) && is_true((struct bool *)result))
+		*rtn = (struct exp *)num;
+	else {
+		if (is_long(num))
+			*rtn = (struct exp *)alloc_long(-(num->l_value));
+		else if (is_double(num))
+			*rtn = (struct exp *)alloc_double(-(num->d_value));
+		else
+			return ERR_TYPE;
+	}
+	return SUCC;
+}
+
+static enum rtn_type wrapper_for_floor_ceil(struct pair *args, struct exp **rtn, int type) {
+	struct number *num;
+	enum rtn_type r_type;
+
+	if ((r_type = check_args(args, 1, 0)) != SUCC)
+		return r_type;
+	if (!is_number(car(args)))
+		return ERR_TYPE;
+
+	num = (struct number *)car(args);
+	if (is_long(num))
+		*rtn = (struct exp *)num;
+	else if (is_double(num)) {
+		if (!type)
+			*rtn = (struct exp *)alloc_long(floor(num->d_value));
+		else
+			*rtn = (struct exp *)alloc_long(ceil(num->d_value));
+	}
+
+	return SUCC;
+}
+
+enum rtn_type u_floor(struct pair *args, struct exp **rtn) {
+	return wrapper_for_floor_ceil(args, rtn, 0);
+}
+
+enum rtn_type u_ceil(struct pair *args, struct exp **rtn) {
+	return wrapper_for_floor_ceil(args, rtn, 1);
+}
+
 /* *
  * this eval is to exported to user space, it's just wrapper for eval
  * also, by definition, eval should be builtin_pro instead of builtin_syntax

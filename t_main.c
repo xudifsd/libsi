@@ -170,6 +170,18 @@ int main(int argc, char *argv[]) {
 	s = alloc_symbol("print");
 	define_in_env(base_env, s, (struct exp *)ca);
 
+	ca = alloc_builtin_pro(u_abs);
+	s = alloc_symbol("abs");
+	define_in_env(base_env, s, (struct exp *)ca);
+
+	ca = alloc_builtin_pro(u_floor);
+	s = alloc_symbol("floor");
+	define_in_env(base_env, s, (struct exp *)ca);
+
+	ca = alloc_builtin_pro(u_ceil);
+	s = alloc_symbol("ceiling");
+	define_in_env(base_env, s, (struct exp *)ca);
+
 
 
 	ca = alloc_builtin_syntax(user_eval);
