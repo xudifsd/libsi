@@ -158,6 +158,10 @@ int main(int argc, char *argv[]) {
 	s = alloc_symbol("eq?");
 	define_in_env(base_env, s, (struct exp *)ca);
 
+	ca = alloc_builtin_pro(u_read);
+	s = alloc_symbol("read");
+	define_in_env(base_env, s, (struct exp *)ca);
+
 	ca = alloc_builtin_pro(u_print);
 	s = alloc_symbol("print");
 	define_in_env(base_env, s, (struct exp *)ca);

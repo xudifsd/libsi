@@ -9,4 +9,5 @@
 #include "utils.h"
 #include "eval.h"
 
-extern int interpret(FILE *in, FILE *out, FILE *err, struct environ *base_env);
+extern enum rtn_type u_read(struct pair *args, struct exp **rtn);
+extern void interpret(FILE *in, FILE *out, FILE *err, struct environ *base_env);

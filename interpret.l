@@ -1,4 +1,4 @@
-%option noyywrap
+%option noyywrap yylineno nodefault
 
 %{
 #include "interpret.h"
@@ -52,8 +52,7 @@ struct exp * yylval;
 "`" { return PARSE_BACKQUOTE; }
 "," { return PARSE_UNQUOTE; }
 ",@" { return PARSE_QUOTESPLICE; }
-[ \t]	{ /* skip */ }
-"\n"	{ yylineno++; }
+[ \t\n]	{ /* skip */ }
 ;.*$	{ /* skip comment */}
 
 <<EOF>>	{ return PARSE_EOF; }
@@ -94,22 +93,28 @@ void eval_print(struct exp *in, FILE *out, FILE *err, struct environ *env, int l
 			case ERR_USER_PRO:
 				error(err, "\nbody of lambda or macro is illegal\n");
 				break;
+			case ERR_PARSE_RB:
+				error(err, "\nunexpected `)'\n", yylineno);
+				break;
 		}
 	}
 }
 
-int interpret(FILE *in, FILE *out, FILE *err, struct environ *base_env) {
-	yyin = in;
-	enum parse_type rtn;
+enum rtn_type u_read(struct pair *args, struct exp **rtn) {
+	enum parse_type parse_rtn;
+	enum rtn_type r_type;
 
 	struct pair *cur;
 	struct symbol *s;
 	struct stack_frame *top = NULL;
 	struct quote_stack *quote_top = NULL;
 
-	while (rtn != PARSE_EOF) {
-		rtn = yylex();
-		switch (rtn) {
+	if ((r_type = check_args(args, 0, 0)) != SUCC)
+		return r_type;
+
+	for (;;) {
+		parse_rtn = yylex();
+		switch (parse_rtn) {
 			case PARSE_QUOTE:
 				push_stack_frame(&top);
 				s = alloc_symbol("quote");
@@ -141,7 +146,7 @@ int interpret(FILE *in, FILE *out, FILE *err, struct environ *base_env) {
 				break;
 			case PARSE_RB:
 				if (!top)
-					error(err, "error in line %d: unexpected `)'\n", yylineno);
+					return ERR_PARSE_RB;
 				else {
 					if (quote_top) {
 						if (quote_top->nest)
@@ -160,8 +165,10 @@ int interpret(FILE *in, FILE *out, FILE *err, struct environ *base_env) {
 
 					if (top)
 						append_stack(top, (struct exp *)cur);
-					else
-						eval_print((struct exp *)cur, out, err, base_env, yylineno);
+					else {
+						*rtn = (struct exp *)cur;
+						return SUCC;
+					}
 				}
 				break;
 			case PARSE_SYM: /* fall through */
@@ -183,14 +190,39 @@ int interpret(FILE *in, FILE *out, FILE *err, struct environ *base_env) {
 						else
 							break;
 					}
-					if (!top)
-						eval_print((struct exp *)cur, out, err, base_env, yylineno);
-				} else /* we are in top level */
-					eval_print(yylval, out, err, base_env, yylineno);
+					if (!top) {
+						*rtn = (struct exp *)cur;
+						return SUCC;
+					}
+				} else {
+					*rtn = yylval;
+					return SUCC;
+				}
 				break;
 			case PARSE_EOF:
-				break;
+				*rtn = (struct exp *)alloc_symbol("#!eof");
+				return SUCC;
 		}
 	}
-	return 0;
+}
+
+static int is_eof(struct exp *e) {
+	if (is_symbol(e) && !strcmp(((struct symbol *)e)->sym, "#!eof"))
+		return 1;
+	else
+		return 0;
+}
+
+void interpret(FILE *in, FILE *out, FILE *err, struct environ *base_env) {
+	struct exp *e;
+	enum rtn_type r_type;
+	yyin = in;
+	for (;;) {
+		r_type = u_read(NULL, &e);
+		if (r_type == ERR_PARSE_RB)
+			error(err, "error in line %d: unexpected `)'\n", yylineno);
+		if (is_eof(e))
+			break;
+		eval_print(e, out, err, base_env, yylineno);
+	}
 }
