@@ -146,6 +146,10 @@ int main(int argc, char *argv[]) {
 	s = alloc_symbol("negative?");
 	define_in_env(base_env, s, (struct exp *)ca);
 
+	ca = alloc_builtin_pro(zero_p);
+	s = alloc_symbol("zero?");
+	define_in_env(base_env, s, (struct exp *)ca);
+
 	ca = alloc_builtin_pro(odd_p);
 	s = alloc_symbol("odd?");
 	define_in_env(base_env, s, (struct exp *)ca);

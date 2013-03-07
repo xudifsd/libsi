@@ -31,6 +31,7 @@ extern enum rtn_type list_p(struct pair *args, struct exp **rtn);
 extern enum rtn_type not(struct pair *args, struct exp **rtn);
 extern enum rtn_type positive_p(struct pair *args, struct exp **rtn);
 extern enum rtn_type negative_p(struct pair *args, struct exp **rtn);
+extern enum rtn_type zero_p(struct pair *args, struct exp **rtn);
 extern enum rtn_type odd_p(struct pair *args, struct exp **rtn);
 extern enum rtn_type even_p(struct pair *args, struct exp **rtn);
 extern enum rtn_type eq_p(struct pair *args, struct exp **rtn);

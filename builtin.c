@@ -308,7 +308,9 @@ enum rtn_type not(struct pair *args, struct exp **rtn) {
 	return SUCC;
 }
 
-enum rtn_type positive_p(struct pair *args, struct exp **rtn) {
+/* type 0 for positive, 1 for negative, 2 for zero_p */
+static enum rtn_type wrapper_for_positive_negative_zero_p(struct pair *args,
+		struct exp **rtn, int type) {
 	int result;
 	struct number *num;
 	enum rtn_type r_type;
@@ -319,24 +321,42 @@ enum rtn_type positive_p(struct pair *args, struct exp **rtn) {
 	if (!is_number(car(args)))
 		return ERR_TYPE;
 	num = (struct number *)car(args);
-	if (is_double(num))
-		result = (num->d_value > 0);
-	else if (is_long(num))
-		result = (num->l_value > 0);
-
+	switch (type) {
+		case 0 :
+			if (is_double(num))
+				result = (num->d_value > 0);
+			else if (is_long(num))
+				result = (num->l_value > 0);
+			break;
+		case 1 :
+			if (is_double(num))
+				result = (num->d_value < 0);
+			else if (is_long(num))
+				result = (num->l_value < 0);
+			break;
+		case 2 :
+			if (is_double(num))
+				result = (num->d_value == 0);
+			else if (is_long(num))
+				result = (num->l_value == 0);
+			break;
+		default :
+			return ERR_TYPE;
+	}
 	*rtn = (struct exp *)alloc_bool(result);
 	return SUCC;
 }
 
-enum rtn_type negative_p(struct pair *args, struct exp **rtn) {
-	struct exp *tmp;
-	struct pair *p;
-	enum rtn_type r_type;
-	if ((r_type = positive_p(args, &tmp) != SUCC))
-		return r_type;
+enum rtn_type positive_p(struct pair *args, struct exp **rtn) {
+	return wrapper_for_positive_negative_zero_p(args, rtn, 0);
+}
 
-	p = alloc_pair(tmp, NULL);
-	return not(p, rtn);
+enum rtn_type negative_p(struct pair *args, struct exp **rtn) {
+	return wrapper_for_positive_negative_zero_p(args, rtn, 1);
+}
+
+enum rtn_type zero_p(struct pair *args, struct exp **rtn) {
+	return wrapper_for_positive_negative_zero_p(args, rtn, 2);
 }
 
 enum rtn_type odd_p(struct pair *args, struct exp **rtn) {
