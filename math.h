@@ -3,6 +3,7 @@
 #include <math.h>
 #include "types.h"
 #include "malloc.h"
+#include "builtin.h"
 #include "utils.h"
 
 
@@ -13,3 +14,4 @@ extern enum rtn_type u_sin(struct pair *args, struct exp **rtn);
 extern enum rtn_type u_cos(struct pair *args, struct exp **rtn);
 extern enum rtn_type u_tan(struct pair *args, struct exp **rtn);
 extern enum rtn_type sub(struct pair *args, struct exp **rtn);
+extern enum rtn_type u_sqrt(struct pair *args, struct exp **rtn);

@@ -132,3 +132,26 @@ enum rtn_type sub(struct pair *args, struct exp **rtn) {
 	*rtn = (struct exp *)construct_number(l, d, 0);
 	return SUCC;
 }
+
+enum rtn_type u_sqrt(struct pair *args, struct exp **rtn) {
+	struct number *num;
+	double in;
+	struct exp *result;
+	enum rtn_type r_type;
+
+	if ((r_type = negative_p(args, &result)) != SUCC)
+		return r_type;
+	/* we do not support sqrt(-1) */
+	if (is_bool(result) && is_true((struct bool *)result))
+		return ERR_MATH;
+
+	num = (struct number *)car(args);
+	if (is_long(num))
+		in = num->l_value;
+	else if (is_double(num))
+		in = num->d_value;
+	else
+		return ERR_TYPE;
+	*rtn = (struct exp *)alloc_double(sqrt(in));
+	return SUCC;
+}

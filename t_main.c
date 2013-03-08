@@ -182,6 +182,10 @@ int main(int argc, char *argv[]) {
 	s = alloc_symbol("ceiling");
 	define_in_env(base_env, s, (struct exp *)ca);
 
+	ca = alloc_builtin_pro(u_sqrt);
+	s = alloc_symbol("sqrt");
+	define_in_env(base_env, s, (struct exp *)ca);
+
 
 
 	ca = alloc_builtin_syntax(user_eval);
