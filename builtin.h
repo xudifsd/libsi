@@ -39,6 +39,7 @@ extern enum rtn_type u_print(struct pair *args, struct exp **rtn);
 extern enum rtn_type u_abs(struct pair *args, struct exp **rtn);
 extern enum rtn_type u_floor(struct pair *args, struct exp **rtn);
 extern enum rtn_type u_ceil(struct pair *args, struct exp **rtn);
+extern enum rtn_type append(struct pair *args, struct exp **rtn);
 extern enum rtn_type user_eval(struct pair *args, struct exp **rtn, struct environ *env);
 extern enum rtn_type u_if(struct pair *args, struct exp **rtn, struct environ *env);
 extern enum rtn_type define(struct pair *args, struct exp **rtn, struct environ *env);

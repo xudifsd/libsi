@@ -186,6 +186,10 @@ int main(int argc, char *argv[]) {
 	s = alloc_symbol("sqrt");
 	define_in_env(base_env, s, (struct exp *)ca);
 
+	ca = alloc_builtin_pro(append);
+	s = alloc_symbol("append");
+	define_in_env(base_env, s, (struct exp *)ca);
+
 
 
 	ca = alloc_builtin_syntax(user_eval);

@@ -485,6 +485,56 @@ enum rtn_type u_ceil(struct pair *args, struct exp **rtn) {
 	return wrapper_for_floor_ceil(args, rtn, 1);
 }
 
+static enum rtn_type dup(struct pair *orig, struct pair **head, struct exp ***tail) {
+	struct pair *p;
+	struct pair *head_p;
+	struct exp **tail_p;
+	struct pair *new;
+	enum rtn_type r_type;
+
+	tail_p = (struct exp **)&head_p;
+	for_pair(p, orig) {
+		if (!is_pair(cdr(p)) && cdr(p) != NULL)
+			return ERR_TYPE;
+		new = alloc_pair(car(p), NULL);
+		*tail_p = (struct exp *)new;
+		tail_p = &new->cdr;
+		if (is_pair(car(p))) {
+			/* here tail is useless */
+			r_type = dup((struct pair *)car(p), (struct pair **)&new->car, tail);
+			if (r_type != SUCC)
+				return r_type;
+		}
+	}
+	*head = head_p;
+	*tail = tail_p;
+	return SUCC;
+}
+
+enum rtn_type append(struct pair *args, struct exp **rtn) {
+	struct exp *ar, *adr;
+	struct pair *result;
+	struct exp **last;
+	enum rtn_type r_type;
+
+	if ((r_type = check_args(args, 2, 0)) != SUCC)
+		return r_type;
+
+	ar = car(args);
+	adr = car((struct pair *)cdr(args));
+	if (!is_pair(car(args)))
+		return ERR_TYPE;
+	r_type = dup((struct pair *)ar, &result, &last);
+	if (r_type != SUCC)
+		return r_type;
+
+	*last = adr;
+	*rtn = (struct exp *)result;
+	return SUCC;
+}
+
+
+
 /* *
  * this eval is to exported to user space, it's just wrapper for eval
  * also, by definition, eval should be builtin_pro instead of builtin_syntax
