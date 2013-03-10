@@ -799,7 +799,7 @@ enum rtn_type backquote(struct pair *args, struct exp **rtn, struct environ *env
 					r_type = eval(car((struct pair *)cdr((struct pair *)ar)), &result, env);
 					if (r_type != SUCC)
 						return r_type;
-					else if (!is_pair(result))
+					else if (!is_pair(result) && result != NULL)
 						return ERR_TYPE;
 					*tail = result;
 

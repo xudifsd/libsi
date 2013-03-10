@@ -46,3 +46,12 @@
          (else
            200)))		;should be ()
 (eval body2)			;should be 200
+
+(defmacro (and e1 #!rest rest)
+  `(if (null? (list ,@rest))
+    ,e1
+    (if ,e1
+      (and ,@rest)
+      ,e1)))			;should be ()
+
+(and 1 2 3)			;should be 3
