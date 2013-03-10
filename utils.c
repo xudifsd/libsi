@@ -63,9 +63,10 @@ enum rtn_type map(map_f fun, struct pair *args, struct pair **rtn) {
 	enum rtn_type r_type;
 
 	for_pair(p, args) {
-		if (!is_pair(cdr(p)) && cdr(p) != NULL)
+		if (!is_pair(cdr(p)) && cdr(p) != NULL) {
+			*rtn = (struct pair *)alloc_err_msg("in map, args is not a list");
 			return ERR_TYPE;
-		if ((r_type = fun(car(p), &e)) == SUCC) {
+		} if ((r_type = fun(car(p), &e)) == SUCC) {
 			value = alloc_pair(e, NULL);
 			*tail = value;
 			tail = (struct pair **)&value->cdr;
@@ -77,34 +78,40 @@ enum rtn_type map(map_f fun, struct pair *args, struct pair **rtn) {
 }
 
 /* if at_least is not 0, len should be at least nr_arg, not exactly */
-enum rtn_type check_args(struct pair *args, unsigned int nr_arg, int at_least) {
+enum rtn_type check_args(struct pair *args, unsigned int nr_arg, int at_least, struct exp **rtn) {
 	unsigned int len = 0;
 	struct pair *p;
 
 	for_pair(p, args) {
-		if (!is_pair(cdr(p)) && cdr(p) != NULL)
+		if (!is_pair(cdr(p)) && cdr(p) != NULL) {
+			*rtn = (struct exp *)alloc_err_msg("in check_args, args is not list");
 			return ERR_TYPE;
+		}
 		len++;
 	}
 
-	if (at_least && len < nr_arg)
+	if (at_least && len < nr_arg) {
+		*rtn = (struct exp *)alloc_err_msg("expect at least %d args, %d is given", nr_arg, len);
 		return ERR_ARGC;
-	else if (!at_least && len != nr_arg)
+	} else if (!at_least && len != nr_arg) {
+		*rtn = (struct exp *)alloc_err_msg("expect %d args, %d is given", nr_arg, len);
 		return ERR_ARGC;
-	else
+	} else
 		return SUCC;
 }
 
 enum rtn_type last_element(struct pair *head, struct exp **rtn) {
 	struct pair *p;
 	for_pair(p, head) {
-		if (!is_pair(cdr(p)) && cdr(p) != NULL)
+		if (!is_pair(cdr(p)) && cdr(p) != NULL) {
+			*rtn = (struct exp *)alloc_err_msg("in last_element, not a list");
 			return ERR_TYPE;
-		if (cdr(p) == NULL) {
+		} if (cdr(p) == NULL) {
 			*rtn = car(p);
 			return SUCC;
 		}
 	}
+	*rtn = (struct exp *)alloc_err_msg("in last_element, not a list");
 	return ERR_TYPE;
 }
 

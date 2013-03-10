@@ -68,35 +68,11 @@ void eval_print(struct exp *in, FILE *out, FILE *err, struct environ *env, int l
 	} else {
 		error(err, "error in line %d:", lineno);
 		print(err, (struct exp *)in);
-
-		switch (r_type) {
-			case SUCC: /* avoid compile warning */
-				break;
-			case ERR_ARGC:
-				error(err, "\ngiven wrong number of args\n");
-				break;
-			case ERR_TYPE:
-				error(err, "\ngiven wrong type of args\n");
-				break;
-			case ERR_UNBOUND:
-				error(err, "\nunbound symbol\n");
-				break;
-			case ERR_MATH:
-				error(err, "\ndoing math wrong\n");
-				break;
-			case ERR_ENV:
-				error(err, "\nsomething is wrong with environment\n");
-				break;
-			case ERR_MEM:
-				error(err, "\nMemory error\n");
-				break;
-			case ERR_USER_PRO:
-				error(err, "\nbody of lambda or macro is illegal\n");
-				break;
-			case ERR_PARSE_RB:
-				error(err, "\nunexpected `)'\n", yylineno);
-				break;
-		}
+		fputc('\n', err);
+		if (is_symbol(result))
+			fprintf(err, "%s\n", ((struct symbol *)result)->sym);
+		else
+			fatal(err, "internal bug, type number is %d\n", result->tag);
 	}
 }
 
@@ -109,7 +85,7 @@ enum rtn_type u_read(struct pair *args, struct exp **rtn) {
 	struct stack_frame *top = NULL;
 	struct quote_stack *quote_top = NULL;
 
-	if ((r_type = check_args(args, 0, 0)) != SUCC)
+	if ((r_type = check_args(args, 0, 0, rtn)) != SUCC)
 		return r_type;
 
 	for (;;) {
@@ -145,9 +121,10 @@ enum rtn_type u_read(struct pair *args, struct exp **rtn) {
 					quote_top->nest++;
 				break;
 			case PARSE_RB:
-				if (!top)
+				if (!top) {
+					*rtn = (struct exp *)alloc_err_msg("unexpected `)'");
 					return ERR_PARSE_RB;
-				else {
+				} else {
 					if (quote_top) {
 						if (quote_top->nest)
 							quote_top->nest--;
@@ -219,9 +196,10 @@ void interpret(FILE *in, FILE *out, FILE *err, struct environ *base_env) {
 	yyin = in;
 	for (;;) {
 		r_type = u_read(NULL, &e);
-		if (r_type == ERR_PARSE_RB)
-			error(err, "error in line %d: unexpected `)'\n", yylineno);
-		if (is_eof(e))
+		if (r_type != SUCC) {
+			error(err, "error in line %d: %s\n", yylineno, ((struct symbol *)e)->sym);
+			continue;
+		} if (is_eof(e))
 			break;
 		eval_print(e, out, err, base_env, yylineno);
 	}

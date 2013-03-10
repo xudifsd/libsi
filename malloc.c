@@ -10,6 +10,15 @@ struct bool *alloc_bool(int value) {
 		return bpool + 0;
 }
 
+struct symbol *alloc_err_msg(const char *fmt, ...) {
+	struct symbol *rtn = alloc_symbol("");
+	va_list args;
+	va_start(args, fmt);
+	vsnprintf((char *)rtn->sym, SYMBOL_LEN, fmt, args);
+	va_end(args);
+	return rtn;
+}
+
 struct environ *alloc_environ(struct environ *parent) {
 	struct environ *rtn = (struct environ *)GC_MALLOC(sizeof(struct environ));
 	assert(rtn);

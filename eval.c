@@ -35,8 +35,10 @@ enum rtn_type eval(struct exp *e, struct exp **rtn, struct environ *env) {
 	} else if (is_symbol(e)) {
 		if (find_in_env(env, (struct symbol *)e, rtn))
 			return SUCC;
-		else
+		else {
+			*rtn = (struct exp *)alloc_err_msg("unbond symbol %s", ((struct symbol *)e)->sym);
 			return ERR_UNBOUND;
+		}
 	} else if (is_pair(e)) {
 		struct pair *p = (struct pair *)e;
 		struct exp *ar = car(p);
@@ -50,21 +52,22 @@ enum rtn_type eval(struct exp *e, struct exp **rtn, struct environ *env) {
 				struct callable *pro = (struct callable *)*rtn;
 
 				if (is_builtin_pro(pro) || is_lambda(pro) || is_macro(pro)) {
-					struct pair *args;
 					struct pair *args_for_apply;
 					if (!is_macro(pro)) {
-						if ((type = eval_sequence((struct pair *)cdr(p), env, &args)) != SUCC)
+						if ((type = eval_sequence((struct pair *)cdr(p), env, (struct pair **)rtn)) != SUCC)
 							return type;
 					} else
-						args = (struct pair *)cdr(p);
+						*rtn = cdr(p);
 
 
-					args_for_apply = alloc_pair((struct exp *)args, NULL);
+					args_for_apply = alloc_pair(*rtn, NULL);
 					args_for_apply = alloc_pair((struct exp *)pro, (struct exp *)args_for_apply);
 
 					type = apply(args_for_apply, &result);
-					if (type != SUCC)
+					if (type != SUCC) {
+						*rtn = result;
 						return type;
+					}
 
 					if (is_macro(pro))
 						return eval(result, rtn, env); /* FIXME is env right? */
@@ -74,11 +77,10 @@ enum rtn_type eval(struct exp *e, struct exp **rtn, struct environ *env) {
 					}
 
 				} else if (is_builtin_syntax(pro)) {
-					type = pro->bs_value((struct pair *)cdr(p), &result, env);
-					if (type == SUCC) {
-						*rtn = result;
+					type = pro->bs_value((struct pair *)cdr(p), rtn, env);
+					if (type == SUCC)
 						return SUCC;
-					} else
+					else
 						return type;
 				} else /* not implemented yet */
 					return ERR_TYPE;

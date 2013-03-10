@@ -34,7 +34,7 @@ struct number {
 	enum num_type type;
 };
 
-#define SYMBOL_LEN 20
+#define SYMBOL_LEN 70
 
 struct symbol {
 	unsigned long tag;

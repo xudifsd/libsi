@@ -6,16 +6,20 @@ enum rtn_type length(struct pair *args, struct exp **rtn) {
 	enum rtn_type r_type;
 	struct exp *r_args;
 
-	if ((r_type = check_args(args, 1, 0)) != SUCC)
+	if ((r_type = check_args(args, 1, 0, rtn)) != SUCC)
 		return r_type;
 
 	r_args = car(args);
 
-	if (!is_pair(r_args))
+	if (!is_pair(r_args)) {
+		*rtn = (struct exp *)alloc_err_msg("arg is not a list");
 		return ERR_TYPE;
+	}
 	for_pair(p, (struct pair *)r_args) {
-		if (!is_pair(cdr(p)) && cdr(p) != NULL)
+		if (!is_pair(cdr(p)) && cdr(p) != NULL) {
+			*rtn = (struct exp *)alloc_err_msg("arg is not a list");
 			return ERR_TYPE;
+		}
 		len++;
 	}
 	*rtn = (struct exp *)alloc_long(len);
@@ -30,7 +34,7 @@ enum rtn_type list(struct pair *args, struct exp **rtn) {
 enum rtn_type cons(struct pair *args, struct exp **rtn) {
 	enum rtn_type r_type;
 
-	if ((r_type = check_args(args, 2, 0)) != SUCC)
+	if ((r_type = check_args(args, 2, 0, rtn)) != SUCC)
 		return r_type;
 
 	*rtn = (struct exp *)alloc_pair(car(args), car((struct pair *)cdr(args)));
@@ -42,7 +46,7 @@ static enum rtn_type wrapper_for_car_cdr(struct pair *args, struct exp **rtn, in
 	struct exp *r_args;
 	enum rtn_type r_type;
 
-	if ((r_type = check_args(args, 1, 0)) != SUCC)
+	if ((r_type = check_args(args, 1, 0, rtn)) != SUCC)
 		return r_type;
 	r_args = car(args);
 	if (is_pair(r_args)) {
@@ -51,8 +55,10 @@ static enum rtn_type wrapper_for_car_cdr(struct pair *args, struct exp **rtn, in
 		else
 			*rtn = cdr((struct pair *)r_args);
 		return SUCC;
-	} else
+	} else {
+		*rtn = (struct exp *)alloc_err_msg("arg is not a pair");
 		return ERR_TYPE;
+	}
 }
 enum rtn_type u_car(struct pair *args, struct exp **rtn) {
 	return wrapper_for_car_cdr(args, rtn, 0);
@@ -75,12 +81,14 @@ static enum rtn_type min_max(struct pair *args, struct pair **rtn) {
 	struct exp *e;
 	enum rtn_type r_type;
 
-	if ((r_type = check_args(args, 1, 1)) != SUCC)
+	if ((r_type = check_args(args, 1, 1, (struct exp **)rtn)) != SUCC)
 		return r_type;
 
 	for_pair(p, args) {
-		if (!is_pair(cdr(p)) && cdr(p) != NULL)
+		if (!is_pair(cdr(p)) && cdr(p) != NULL) {
+			*rtn = (struct pair *)alloc_err_msg("args list is not a list");
 			return ERR_TYPE;
+		}
 		e = car(p);
 		if (e && is_number(e)) {
 			num = (struct number *)e;
@@ -95,8 +103,10 @@ static enum rtn_type min_max(struct pair *args, struct pair **rtn) {
 				if (num->d_value < cur_dmin)
 					cur_dmin = num->d_value;
 			}
-		} else
+		} else {
+			*rtn = (struct pair *)alloc_err_msg("args is not number");
 			return ERR_TYPE;
+		}
 	}
 
 	if (cur_lmax < cur_dmax)
@@ -114,25 +124,23 @@ static enum rtn_type min_max(struct pair *args, struct pair **rtn) {
 }
 
 enum rtn_type min(struct pair *args, struct exp **rtn) {
-	struct pair *result;
 	enum rtn_type r_type;
-	r_type = min_max(args, &result);
+	r_type = min_max(args, (struct pair **)rtn);
 	if (r_type != SUCC)
 		return r_type;
 	else {
-		*rtn = car(result);
+		*rtn = car((struct pair *)*rtn);
 		return SUCC;
 	}
 }
 
 enum rtn_type max(struct pair *args, struct exp **rtn) {
-	struct pair *result;
 	enum rtn_type r_type;
-	r_type = min_max(args, &result);
+	r_type = min_max(args, (struct pair **)rtn);
 	if (r_type != SUCC)
 		return r_type;
 	else {
-		*rtn = cdr(result);
+		*rtn = cdr((struct pair *)*rtn);
 		return SUCC;
 	}
 }
@@ -142,7 +150,7 @@ static enum rtn_type wrapper_for_less_more_equal(struct pair *args, struct exp *
 	enum rtn_type r_type;
 	int result;
 
-	if ((r_type = check_args(args, 2, 0)) != SUCC)
+	if ((r_type = check_args(args, 2, 0, rtn)) != SUCC)
 		return r_type;
 
 	r_type = sub(args, rtn);
@@ -175,6 +183,7 @@ static enum rtn_type wrapper_for_less_more_equal(struct pair *args, struct exp *
 			else result = 0;
 			break;
 		default :
+			*rtn = (struct exp *)alloc_err_msg("template function:internal bug, unknow type");
 			return ERR_TYPE;
 	}
 
@@ -205,7 +214,7 @@ enum rtn_type less_equal(struct pair *args, struct exp **rtn) {
 enum rtn_type null_p(struct pair *args, struct exp **rtn) {
 	enum rtn_type r_type;
 
-	if ((r_type = check_args(args, 1, 0)) != SUCC)
+	if ((r_type = check_args(args, 1, 0, rtn)) != SUCC)
 		return r_type;
 
 	if (car(args) == NULL)
@@ -224,7 +233,7 @@ static int is_procedure(struct exp *e) {
 static enum rtn_type wrapper_for_type_p(struct pair *args, struct exp **rtn, int type) {
 	enum rtn_type r_type;
 
-	if ((r_type = check_args(args, 1, 0)) != SUCC)
+	if ((r_type = check_args(args, 1, 0, rtn)) != SUCC)
 		return r_type;
 	switch (type) {
 		case NUMBER :
@@ -258,6 +267,7 @@ static enum rtn_type wrapper_for_type_p(struct pair *args, struct exp **rtn, int
 				*rtn = (struct exp *)alloc_bool(0);
 			break;
 		default :
+			*rtn = (struct exp *)alloc_err_msg("template function:internal bug, unknow type");
 			return ERR_TYPE;
 	}
 	return SUCC;
@@ -297,7 +307,7 @@ enum rtn_type list_p(struct pair *args, struct exp **rtn) {
 enum rtn_type not(struct pair *args, struct exp **rtn) {
 	enum rtn_type r_type;
 
-	if ((r_type = check_args(args, 1, 0)) != SUCC)
+	if ((r_type = check_args(args, 1, 0, rtn)) != SUCC)
 		return r_type;
 
 	if (is_bool(car(args)) && !is_true((struct bool *)car(args)))
@@ -315,11 +325,13 @@ static enum rtn_type wrapper_for_positive_negative_zero_p(struct pair *args,
 	struct number *num;
 	enum rtn_type r_type;
 
-	if ((r_type = check_args(args, 1, 0)) != SUCC)
+	if ((r_type = check_args(args, 1, 0, rtn)) != SUCC)
 		return r_type;
 
-	if (!is_number(car(args)))
+	if (!is_number(car(args))) {
+		*rtn = (struct exp *)alloc_err_msg("arg is not number");
 		return ERR_TYPE;
+	}
 	num = (struct number *)car(args);
 	switch (type) {
 		case 0 :
@@ -341,6 +353,7 @@ static enum rtn_type wrapper_for_positive_negative_zero_p(struct pair *args,
 				result = (num->l_value == 0);
 			break;
 		default :
+			*rtn = (struct exp *)alloc_err_msg("template function:internal bug, unknow type");
 			return ERR_TYPE;
 	}
 	*rtn = (struct exp *)alloc_bool(result);
@@ -364,15 +377,19 @@ enum rtn_type odd_p(struct pair *args, struct exp **rtn) {
 	struct number *num;
 	enum rtn_type r_type;
 
-	if ((r_type = check_args(args, 1, 0)) != SUCC)
+	if ((r_type = check_args(args, 1, 0, rtn)) != SUCC)
 		return r_type;
 
-	if (!is_number(car(args)))
+	if (!is_number(car(args))) {
+		*rtn = (struct exp *)alloc_err_msg("arg is not number");
 		return ERR_TYPE;
+	}
 
 	num = (struct number *)car(args);
-	if (!is_long(num))
+	if (!is_long(num)) {
+		*rtn = (struct exp *)alloc_err_msg("arg is not integer");
 		return ERR_TYPE;
+	}
 	result = num->l_value % 2;
 	*rtn = (struct exp *)alloc_bool(result);
 	return SUCC;
@@ -394,7 +411,7 @@ enum rtn_type eq_p(struct pair *args, struct exp **rtn) {
 	struct exp *ar, *adr;
 	enum rtn_type r_type;
 
-	if ((r_type = check_args(args, 2, 0)) != SUCC)
+	if ((r_type = check_args(args, 2, 0, rtn)) != SUCC)
 		return r_type;
 
 	ar = car(args);
@@ -425,7 +442,7 @@ enum rtn_type eq_p(struct pair *args, struct exp **rtn) {
 enum rtn_type u_print(struct pair *args, struct exp **rtn) {
 	enum rtn_type r_type;
 
-	if ((r_type = check_args(args, 1, 0)) != SUCC)
+	if ((r_type = check_args(args, 1, 0, rtn)) != SUCC)
 		return r_type;
 
 	print(stdout, car(args));
@@ -449,8 +466,10 @@ enum rtn_type u_abs(struct pair *args, struct exp **rtn) {
 			*rtn = (struct exp *)alloc_long(-(num->l_value));
 		else if (is_double(num))
 			*rtn = (struct exp *)alloc_double(-(num->d_value));
-		else
+		else {
+			*rtn = (struct exp *)alloc_err_msg("internal bug, unknow number type");
 			return ERR_TYPE;
+		}
 	}
 	return SUCC;
 }
@@ -459,10 +478,12 @@ static enum rtn_type wrapper_for_floor_ceil(struct pair *args, struct exp **rtn,
 	struct number *num;
 	enum rtn_type r_type;
 
-	if ((r_type = check_args(args, 1, 0)) != SUCC)
+	if ((r_type = check_args(args, 1, 0, rtn)) != SUCC)
 		return r_type;
-	if (!is_number(car(args)))
+	if (!is_number(car(args))) {
+		*rtn = (struct exp *)alloc_err_msg("args is not number");
 		return ERR_TYPE;
+	}
 
 	num = (struct number *)car(args);
 	if (is_long(num))
@@ -494,16 +515,20 @@ static enum rtn_type dup(struct pair *orig, struct pair **head, struct exp ***ta
 
 	tail_p = (struct exp **)&head_p;
 	for_pair(p, orig) {
-		if (!is_pair(cdr(p)) && cdr(p) != NULL)
+		if (!is_pair(cdr(p)) && cdr(p) != NULL) {
+			*head = (struct pair *)alloc_err_msg("arg is not a list");
 			return ERR_TYPE;
+		}
 		new = alloc_pair(car(p), NULL);
 		*tail_p = (struct exp *)new;
 		tail_p = &new->cdr;
 		if (is_pair(car(p))) {
 			/* here tail is useless */
 			r_type = dup((struct pair *)car(p), (struct pair **)&new->car, tail);
-			if (r_type != SUCC)
+			if (r_type != SUCC) {
+				*head = (struct pair *)car(new);
 				return r_type;
+			}
 		}
 	}
 	*head = head_p;
@@ -517,16 +542,20 @@ enum rtn_type append(struct pair *args, struct exp **rtn) {
 	struct exp **last;
 	enum rtn_type r_type;
 
-	if ((r_type = check_args(args, 2, 0)) != SUCC)
+	if ((r_type = check_args(args, 2, 0, rtn)) != SUCC)
 		return r_type;
 
 	ar = car(args);
 	adr = car((struct pair *)cdr(args));
-	if (!is_pair(car(args)))
+	if (!is_pair(ar)) {
+		*rtn = (struct exp *)alloc_err_msg("arg is not a list");
 		return ERR_TYPE;
+	}
 	r_type = dup((struct pair *)ar, &result, &last);
-	if (r_type != SUCC)
+	if (r_type != SUCC) {
+		*rtn = (struct exp *)result;
 		return r_type;
+	}
 
 	*last = adr;
 	*rtn = (struct exp *)result;
@@ -545,7 +574,7 @@ enum rtn_type user_eval(struct pair *args, struct exp **rtn, struct environ *env
 	enum rtn_type r_type;
 	struct exp *r_args;
 
-	if ((r_type = check_args(args, 1, 0)) != SUCC)
+	if ((r_type = check_args(args, 1, 0, rtn)) != SUCC)
 		return r_type;
 
 	r_type = eval(car(args), &r_args, env);
@@ -561,8 +590,8 @@ enum rtn_type u_if(struct pair *args, struct exp **rtn, struct environ *env) {
 	struct exp *predict;
 	int nr_args;
 
-	if ((r_type = check_args(args, 2, 0)) != SUCC) {
-		if ((r_type = check_args(args, 3, 0)) != SUCC)
+	if ((r_type = check_args(args, 2, 0, rtn)) != SUCC) {
+		if ((r_type = check_args(args, 3, 0, rtn)) != SUCC)
 			return r_type;
 		else
 			nr_args = 3;
@@ -575,8 +604,10 @@ enum rtn_type u_if(struct pair *args, struct exp **rtn, struct environ *env) {
 
 	if (is_bool(predict) && ((struct bool *)predict)->value == 0) {
 		/* not true*/
-		if (nr_args == 2)
+		if (nr_args == 2) {
+			*rtn = (struct exp *)alloc_err_msg("`if' requires 2 args");
 			return ERR_ARGC;
+		}
 		return eval(car((struct pair *)cdr((struct pair *)cdr(args))), rtn, env);
 	} else
 		return eval(car((struct pair *)cdr(args)), rtn, env);
@@ -586,19 +617,21 @@ enum rtn_type define(struct pair *args, struct exp **rtn, struct environ *env) {
 	struct exp *ar, *adr;
 	enum rtn_type r_type;
 
-	if ((r_type = check_args(args, 2, 1)) != SUCC)
+	if ((r_type = check_args(args, 2, 1, rtn)) != SUCC)
 		return r_type;
 
 	ar = car(args);
 	adr = car((struct pair *)cdr(args));
 	if (is_symbol(ar)) { /* (define x 10) */
-		if ((r_type = check_args(args, 2, 0)) != SUCC)
+		if ((r_type = check_args(args, 2, 0, rtn)) != SUCC)
 			return r_type;
 		r_type = eval(adr, rtn, env);
 		if (r_type != SUCC)
 			return r_type;
-		if (define_in_env(env, (struct symbol *)ar, *rtn))
+		if (define_in_env(env, (struct symbol *)ar, *rtn)) {
+			*rtn = (struct exp *)alloc_err_msg("could not define %s in env", ((struct symbol *)ar)->sym);
 			return ERR_ENV;
+		}
 		*rtn = NULL;
 		return SUCC;
 	} else if (is_pair(ar)) {
@@ -612,8 +645,10 @@ enum rtn_type define(struct pair *args, struct exp **rtn, struct environ *env) {
 		dr = cdr((struct pair *)args);
 		if (!is_symbol(aar) ||
 				!is_pair(dar) ||
-				!is_pair(dr))
+				!is_pair(dr)) {
+			*rtn = (struct exp *)alloc_err_msg("structure is not proper");
 			return ERR_TYPE;
+		}
 		s = (struct symbol *)aar;
 		pars = (struct pair *)dar;
 		body = (struct pair *)dr;
@@ -623,12 +658,16 @@ enum rtn_type define(struct pair *args, struct exp **rtn, struct environ *env) {
 		r_type = lambda(p, rtn, env);
 		if (r_type != SUCC)
 			return r_type;
-		if (define_in_env(env, s, *rtn))
+		if (define_in_env(env, s, *rtn)) {
+			*rtn = (struct exp *)alloc_err_msg("could not define %s in env", s->sym);
 			return ERR_ENV;
+		}
 		*rtn = NULL;
 		return SUCC;
-	} else
+	} else {
+		*rtn = (struct exp *)alloc_err_msg("structure is not proper");
 		return ERR_TYPE;
+	}
 }
 
 enum rtn_type set(struct pair *args, struct exp **rtn, struct environ *env) {
@@ -637,21 +676,25 @@ enum rtn_type set(struct pair *args, struct exp **rtn, struct environ *env) {
 	struct exp *adr;
 	enum rtn_type r_type;
 
-	if ((r_type = check_args(args, 2, 0)) != SUCC)
+	if ((r_type = check_args(args, 2, 0, rtn)) != SUCC)
 		return r_type;
 
 	ar = car(args);
 	adr = car((struct pair *)cdr(args));
-	if (!is_symbol(ar))
+	if (!is_symbol(ar)) {
+		*rtn = (struct exp *)alloc_err_msg("requires symbol");
 		return ERR_TYPE;
+	}
 	s = (struct symbol *)ar;
 
 	r_type = eval(adr, rtn, env);
 	if (r_type != SUCC)
 		return r_type;
 
-	if (set_in_env(env, s, *rtn))
+	if (set_in_env(env, s, *rtn)) {
+		*rtn = (struct exp *)alloc_err_msg("could not set %s in env", s->sym);
 		return ERR_ENV;
+	}
 	*rtn = NULL;
 	return SUCC;
 }
@@ -670,15 +713,17 @@ static enum rtn_type wrapper_for_lambda_defmacro(struct pair *args, struct exp *
 	struct pair *l_body;
 	enum rtn_type r_type;
 
-	if ((r_type = check_args(args, 2, 1)) != SUCC)
+	if ((r_type = check_args(args, 2, 1, rtn)) != SUCC)
 		return r_type;
 
 	if (is_pair(car(args)) || car(args) == NULL) /* we accept 0 args for lambda */
 		l_args = (struct pair *)car(args);
-	else
+	else {
+		*rtn = (struct exp *)alloc_err_msg("structure is not proper");
 		return ERR_TYPE;
+	}
 
-	l_body = (struct pair *)cdr(args); /* we know from check_args that args should be list */
+	l_body = (struct pair *)cdr(args); /* we know from check_args that a, rtnrgs should be list */
 
 	if (type)
 		*rtn = (struct exp *)alloc_macro(l_args, l_body, env);
@@ -700,7 +745,7 @@ enum rtn_type defmacro(struct pair *args, struct exp **rtn, struct environ *env)
 	struct pair *pars;
 	struct pair *r_args;
 	struct exp *macro;
-	if ((r_type = check_args(args, 2, 0)) != SUCC)
+	if ((r_type = check_args(args, 2, 0, rtn)) != SUCC)
 		return r_type;
 
 	ar = car(args);
@@ -708,8 +753,10 @@ enum rtn_type defmacro(struct pair *args, struct exp **rtn, struct environ *env)
 	if (!is_pair(ar) ||
 			car((struct pair *)ar) == NULL ||
 			!is_symbol(car((struct pair *)ar)) ||
-			!is_pair(cdr((struct pair *)ar)))
+			!is_pair(cdr((struct pair *)ar))) {
+		*rtn = (struct exp *)alloc_err_msg("structure is not proper");
 		return ERR_TYPE;
+	}
 	name = (struct symbol *)car((struct pair *)ar);
 	pars = (struct pair *)cdr((struct pair *)ar);
 
@@ -718,8 +765,10 @@ enum rtn_type defmacro(struct pair *args, struct exp **rtn, struct environ *env)
 
 	if ((r_type = wrapper_for_lambda_defmacro(r_args, &macro, env, 1)) != SUCC)
 		return r_type;
-	if (!is_callable(macro) || !is_macro((struct callable *)macro))
+	if (!is_callable(macro) || !is_macro((struct callable *)macro)) {
+		*rtn = (struct exp *)alloc_err_msg("internal bug: wrapper return wrong value");
 		return ERR_TYPE;
+	}
 
 	r_args = alloc_pair(macro, NULL);
 	r_args = alloc_pair((struct exp *)name, (struct exp *)r_args);
@@ -729,35 +778,40 @@ enum rtn_type defmacro(struct pair *args, struct exp **rtn, struct environ *env)
 enum rtn_type macroexpand(struct pair *args, struct exp **rtn, struct environ *env) {
 	/* we need env, so we pretend to be builtin_syntax */
 	struct exp *ar, *dr;
-	struct exp *value;
 	struct pair *p;
 	struct pair *args_for_apply;
 	enum rtn_type r_type;
-	if ((r_type = check_args(args, 1, 0)) != SUCC)
+	if ((r_type = check_args(args, 1, 0, rtn)) != SUCC)
 		return r_type;
-	if ((r_type = eval(car(args), &value, env)) != SUCC)
+	if ((r_type = eval(car(args), rtn, env)) != SUCC)
 		return r_type;
 
-	if (!is_pair(value))
+	if (!is_pair(*rtn)) {
+		*rtn = (struct exp *)alloc_err_msg("could not expand nonlist");
 		return ERR_TYPE;
+	}
 
-	p = (struct pair *)value;
+	p = (struct pair *)*rtn;
 	ar = car(p);
 	dr = cdr(p);
-	if ((r_type = eval(ar, &value, env)) != SUCC)
+	if ((r_type = eval(ar, rtn, env)) != SUCC) {
+		*rtn = (struct exp *)alloc_err_msg("could not eval macro");
 		return r_type;
-	if (!is_callable(value) && !is_macro((struct callable *)value))
+	}
+	if (!is_callable(*rtn) && !is_macro((struct callable *)*rtn)) {
+		*rtn = (struct exp *)alloc_err_msg("not a macro");
 		return ERR_TYPE;
+	}
 
 	/* construct args for apply */
 	args_for_apply = alloc_pair(dr, NULL);
-	args_for_apply = alloc_pair(value, (struct exp *)args_for_apply);
+	args_for_apply = alloc_pair(*rtn, (struct exp *)args_for_apply);
 	return apply(args_for_apply, rtn);
 }
 
 enum rtn_type quote(struct pair *args, struct exp **rtn, struct environ *env) {
 	enum rtn_type r_type;
-	if ((r_type = check_args(args, 1, 0)) != SUCC)
+	if ((r_type = check_args(args, 1, 0, rtn)) != SUCC)
 		return r_type;
 	*rtn = car(args);
 	return SUCC;
@@ -775,7 +829,7 @@ enum rtn_type backquote(struct pair *args, struct exp **rtn, struct environ *env
 	struct exp *result;
 	enum rtn_type r_type;
 
-	if ((r_type = check_args(args, 1, 0)) != SUCC)
+	if ((r_type = check_args(args, 1, 0, rtn)) != SUCC)
 		return r_type;
 
 	if (!car(args)) {
@@ -786,48 +840,64 @@ enum rtn_type backquote(struct pair *args, struct exp **rtn, struct environ *env
 		args = (struct pair *)car(args);
 
 		for_pair(p, args) {
-			if (!is_pair(cdr(p)) && cdr(p) != NULL)
+			if (!is_pair(cdr(p)) && cdr(p) != NULL) {
+				*rtn = (struct exp *)alloc_err_msg("args list is not a list");
 				return ERR_TYPE;
+			}
 			ar = car(p);
 			if (is_pair(ar)) {
 				aar = car((struct pair *)ar);
 				if (is_symbol(aar) && !strcmp(((struct symbol *)aar)->sym, "quotesplice")) {
 					/* we can not use recursive to handler quotesplice */
 					if (!is_pair(cdr((struct pair *)ar)) ||
-							cdr((struct pair *)cdr((struct pair *)ar)) != NULL)
+							cdr((struct pair *)cdr((struct pair *)ar)) != NULL) {
+						*rtn = (struct exp *)alloc_err_msg("arg of quotesplice is not a list");
 						return ERR_TYPE;
+					}
 					r_type = eval(car((struct pair *)cdr((struct pair *)ar)), &result, env);
-					if (r_type != SUCC)
+					if (r_type != SUCC) {
+						*rtn = result;
 						return r_type;
-					else if (!is_pair(result) && result != NULL)
+					}
+					else if (!is_pair(result) && result != NULL) {
+						*rtn = (struct exp *)alloc_err_msg("arg of quotesplice is not a list");
 						return ERR_TYPE;
+					}
 					*tail = result;
 
 					/* direct tail to the right place */
 					struct pair *tmp;
 					struct exp **tmp_tail;
 					for_pair(tmp, (struct pair *)result) {
-						if (!is_pair(cdr(tmp)) && cdr(tmp) != NULL)
+						if (!is_pair(cdr(tmp)) && cdr(tmp) != NULL) {
+							*rtn = (struct exp *)alloc_err_msg("arg of quotesplice is not a list");
 							return ERR_TYPE;
+						}
 						tmp_tail = &tmp->cdr;
 					}
 					tail = tmp_tail;
 				} else {
 					new = alloc_pair(ar, NULL); //makes call legal
 					r_type = backquote(new, &result, env);
-					if (r_type != SUCC)
+					if (r_type != SUCC) {
+						*rtn = result;
 						return r_type;
+					}
 					new = alloc_pair(result, NULL);
 					*tail = (struct exp *)new;
 					tail = (struct exp **)&new->cdr;
 				}
 			} else if (is_symbol(ar) && !strcmp(((struct symbol *)ar)->sym, "unquote")) {
 				if (!is_pair(cdr(p)) ||
-						cdr((struct pair *)cdr(p)) != NULL)
+						cdr((struct pair *)cdr(p)) != NULL) {
+					*rtn = (struct exp *)alloc_err_msg("arg of unquote is not a list");
 					return ERR_TYPE;
+				}
 				r_type = eval(car((struct pair *)cdr(p)), &result, env);
-				if (r_type != SUCC)
+				if (r_type != SUCC) {
+					*rtn = result;
 					return r_type;
+				}
 				*tail = result; //we may update tail, but as we will return, it makes no sense
 				break;
 			} else {
