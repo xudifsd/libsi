@@ -17,8 +17,12 @@ void print(FILE *port, struct exp *e) {
 	else if (is_pair(e)) {
 		fprintf(port, "(");
 		for_pair(p, (struct pair *)e) {
-			assert(is_pair(cdr(p)) || cdr(p) == NULL);
-			print(port, (struct exp *)p->car);
+			print(port, car(p));
+			if (!is_pair(cdr(p)) && cdr(p) != NULL) {
+				fprintf(port, ". ");
+				print(port, cdr(p));
+				break;
+			}
 		}
 		fprintf(port, "\b)");
 	} else if (is_number(e)) {

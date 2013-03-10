@@ -29,3 +29,5 @@ x				;should be 200
 (= 2 2.0)			;should be #t
 (>= -1.2 2)			;should be #f
 (>= 1.0 0)			;should be #t
+(cons 1 2)			;should be (1 . 2)
+(append (list 1 2) 3)		;should be (1 2 . 3)
