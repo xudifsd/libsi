@@ -82,6 +82,7 @@ struct stack_frame *alloc_stack_frame(struct stack_frame *prev) {
 	rtn->prev = prev;
 	rtn->head = NULL;
 	rtn->tail = &rtn->head;
+	rtn->dot_list = 0;
 	return rtn;
 }
 
@@ -98,6 +99,14 @@ struct quote_stack *alloc_quote_stack(struct quote_stack *prev) {
 	assert(rtn);
 	rtn->prev = prev;
 	rtn->nest = 0;
+	return rtn;
+}
+
+struct dot_stack *alloc_dot_stack(struct dot_stack *prev) {
+	struct dot_stack *rtn = (struct dot_stack *)GC_MALLOC(sizeof(struct dot_stack));
+	assert(rtn);
+	rtn->prev = prev;
+	rtn->dot_nest = 0;
 	return rtn;
 }
 

@@ -21,6 +21,7 @@ extern struct pair *alloc_pair(struct exp *car, struct exp *cdr);
 extern struct stack_frame *alloc_stack_frame(struct stack_frame *prev);
 extern struct stack *alloc_stack(struct stack *prev);
 extern struct quote_stack *alloc_quote_stack(struct quote_stack *prev);
+extern struct dot_stack *alloc_dot_stack(struct dot_stack *prev);
 extern struct callable *alloc_builtin_pro(builtin_pro_f fun);
 extern struct callable *alloc_builtin_syntax(builtin_syntax_f fun);
 extern struct callable *alloc_lambda(struct pair *args, struct pair *body, struct environ *bind);

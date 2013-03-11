@@ -59,7 +59,7 @@ enum callable_type {BUILTIN_SYNTAX, BUILTIN_PRO, LAMBDA, MACRO};
  * */
 
 enum rtn_type {SUCC, ERR_ARGC, ERR_TYPE, ERR_UNBOUND, ERR_MATH, ERR_ENV,
-	ERR_MEM, ERR_USER_PRO, ERR_PARSE_RB};
+	ERR_MEM, ERR_USER_PRO, ERR_PARSE_RB, ERR_PARSE_DOT};
 
 typedef enum rtn_type (*builtin_pro_f)(struct pair *args, struct exp **rtn);
 
@@ -84,6 +84,7 @@ struct callable {
 
 /* This stack frame is *not* run-time stack,  it's parse-time stack */
 struct stack_frame {
+	int dot_list;
 	struct stack_frame *prev;
 	struct pair *head;
 	struct pair **tail;
@@ -92,6 +93,11 @@ struct stack_frame {
 struct quote_stack {
 	unsigned int nest;
 	struct quote_stack *prev;
+};
+
+struct dot_stack {
+	int dot_nest;
+	struct dot_stack *prev;
 };
 
 /* this is for eval_map_base, FIXME share code with stack_frame */

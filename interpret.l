@@ -9,7 +9,7 @@
 
 enum parse_type { PARSE_LB, PARSE_RB, PARSE_SYM, PARSE_LONG, PARSE_DOUBLE,
 	PARSE_EOF, PARSE_QUOTE, PARSE_BACKQUOTE, PARSE_UNQUOTE,
-	PARSE_QUOTESPLICE, PARSE_TRUE, PARSE_FALSE};
+	PARSE_QUOTESPLICE, PARSE_TRUE, PARSE_FALSE, PARSE_DOT};
 
 struct exp * yylval;
 %}
@@ -17,6 +17,7 @@ struct exp * yylval;
 %%
 "("	{ return PARSE_LB; }
 ")"	{ return PARSE_RB; }
+"."	{ return PARSE_DOT; }
 [-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)? {
 	if (strchr(yytext, '.')) {
 		struct number *d;
@@ -84,6 +85,8 @@ enum rtn_type u_read(struct pair *args, struct exp **rtn) {
 	struct symbol *s;
 	struct stack_frame *top = NULL;
 	struct quote_stack *quote_top = NULL;
+	struct dot_stack *dot_top = NULL;
+	int dot_list = 0;
 
 	if ((r_type = check_args(args, 0, 0, rtn)) != SUCC)
 		return r_type;
@@ -94,33 +97,64 @@ enum rtn_type u_read(struct pair *args, struct exp **rtn) {
 			case PARSE_QUOTE:
 				push_stack_frame(&top);
 				s = alloc_symbol("quote");
-				append_stack(top, (struct exp *)s);
+				if (append_stack(top, (struct exp *)s, &dot_list)) {
+					*rtn = (struct exp *)alloc_err_msg("error in append_stack, when append quote");
+					return ERR_PARSE_DOT;
+				}
 				push_quote_stack(&quote_top);
 				break;
 			case PARSE_BACKQUOTE:
 				push_stack_frame(&top);
 				s = alloc_symbol("backquote");
-				append_stack(top, (struct exp *)s);
+				if (append_stack(top, (struct exp *)s, &dot_list)) {
+					*rtn = (struct exp *)alloc_err_msg("error in append_stack, when append backquote");
+					return ERR_PARSE_DOT;
+				}
 				push_quote_stack(&quote_top);
 				break;
 			case PARSE_UNQUOTE:
 				push_stack_frame(&top);
 				s = alloc_symbol("unquote");
-				append_stack(top, (struct exp *)s);
+				if (append_stack(top, (struct exp *)s, &dot_list)) {
+					*rtn = (struct exp *)alloc_err_msg("error in append_stack, when append unquote");
+					return ERR_PARSE_DOT;
+				}
 				push_quote_stack(&quote_top);
 				break;
 			case PARSE_QUOTESPLICE:
 				push_stack_frame(&top);
 				s = alloc_symbol("quotesplice");
-				append_stack(top, (struct exp *)s);
+				if (append_stack(top, (struct exp *)s, &dot_list)) {
+					*rtn = (struct exp *)alloc_err_msg("error in append_stack, when append quotesplice");
+					return ERR_PARSE_DOT;
+				}
 				push_quote_stack(&quote_top);
 				break;
 			case PARSE_LB:
-				push_stack_frame(&top);
-				if (quote_top)
-					quote_top->nest++;
+				if (dot_list) {
+					dot_list = 0;
+					push_dot_stack(&dot_top);
+					dot_top->dot_nest++;
+				} else {
+					if (dot_top)
+						dot_top->dot_nest++;
+					push_stack_frame(&top);
+					if (quote_top)
+						quote_top->nest++;
+				}
 				break;
 			case PARSE_RB:
+				if (dot_list) {
+					*rtn = (struct exp *)alloc_err_msg("after . should have `)'");
+					return ERR_PARSE_RB;
+				}
+				if (dot_top) {
+					dot_top->dot_nest--;
+					if (!dot_top->dot_nest) {
+						pop_dot_stack(&dot_top);
+						continue;
+					}
+				}
 				if (!top) {
 					*rtn = (struct exp *)alloc_err_msg("unexpected `)'");
 					return ERR_PARSE_RB;
@@ -133,20 +167,35 @@ enum rtn_type u_read(struct pair *args, struct exp **rtn) {
 
 							cur = top->head;
 							pop_stack_frame(&top);
-							append_stack(top, (struct exp *)cur);
+							if (append_stack(top, (struct exp *)cur, &dot_list)) {
+								*rtn = (struct exp *)alloc_err_msg(
+										"error in append_stack, when PARSE_RB 1");
+								return ERR_PARSE_DOT;
+							}
 						}
 					}
 
 					cur = top->head;
 					pop_stack_frame(&top);
 
-					if (top)
-						append_stack(top, (struct exp *)cur);
-					else {
+					if (top) {
+						if (append_stack(top, (struct exp *)cur, &dot_list)) {
+							*rtn = (struct exp *)alloc_err_msg(
+									"error in append_stack, when PARSE_RB 2");
+							return ERR_PARSE_DOT;
+						}
+					} else {
 						*rtn = (struct exp *)cur;
 						return SUCC;
 					}
 				}
+				break;
+			case PARSE_DOT:
+				if (dot_list) {
+					*rtn = (struct exp *)alloc_err_msg("invalid use of `.'");
+					return ERR_PARSE_DOT;
+				}
+				dot_list = 1;
 				break;
 			case PARSE_SYM: /* fall through */
 			case PARSE_LONG: /* fall through */
@@ -154,7 +203,11 @@ enum rtn_type u_read(struct pair *args, struct exp **rtn) {
 			case PARSE_FALSE: /* fall through */
 			case PARSE_DOUBLE:
 				if (top) {
-					append_stack(top, yylval);
+					if (append_stack(top, yylval, &dot_list)) {
+						*rtn = (struct exp *)alloc_err_msg(
+								"error in append_stack, when append something");
+						return ERR_PARSE_DOT;
+					}
 
 					cur = NULL;
 					while (quote_top && quote_top->nest == 0) {
@@ -162,9 +215,13 @@ enum rtn_type u_read(struct pair *args, struct exp **rtn) {
 
 						cur = top->head;
 						pop_stack_frame(&top);
-						if (top)
-							append_stack(top, (struct exp *)cur);
-						else
+						if (top) {
+							if (append_stack(top, (struct exp *)cur, &dot_list)) {
+								*rtn = (struct exp *)alloc_err_msg(
+										"error in append_stack, when append something in quote");
+								return ERR_PARSE_DOT;
+							}
+						} else
 							break;
 					}
 					if (!top) {

@@ -11,3 +11,7 @@
 (define x '(1 2 3))	;should be ()
 `(0 ,@x)		;should be (0 1 2 3)
 `(1 2 3 ,@())		;should be (1 2 3)
+'(1 2 . 3)		;should be (1 2 . 3)
+'(1 2 . (3 4))		;should be (1 2 3 4)
+'(1 2 . (3 (4)))	;should be (1 2 3 (4))
+'(1 2 . (3 . (4)))	;should be (1 2 3 4)
