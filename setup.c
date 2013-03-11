@@ -214,3 +214,14 @@ struct environ *setup_builtin() {
 	define_in_env(base_env, s, (struct exp *)ca);
 	return base_env;
 }
+
+int setup_basic(struct environ *env) {
+	FILE *null, *basic;
+	null = fopen("/dev/null", "w");
+	basic = fopen("/usr/local/share/si/setup.scm", "r");
+	if (!null || !basic)
+		return 1;
+
+	interpret_file(basic, null, null, env);
+	return 0;
+}

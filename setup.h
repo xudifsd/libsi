@@ -7,5 +7,6 @@
 #include "math.h"
 #include "builtin.h"
 #include "usage.h"
+#include <stdio.h>
 
 #include "u_setup.h"
