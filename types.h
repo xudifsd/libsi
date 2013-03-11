@@ -41,6 +41,8 @@ struct symbol {
 	const char sym[SYMBOL_LEN];
 };
 
+extern struct symbol no_output_sym;
+
 struct pair {
 	unsigned long tag;
 	struct exp *car;

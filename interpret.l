@@ -12,6 +12,7 @@ enum parse_type { PARSE_LB, PARSE_RB, PARSE_SYM, PARSE_LONG, PARSE_DOUBLE,
 	PARSE_QUOTESPLICE, PARSE_TRUE, PARSE_FALSE, PARSE_DOT};
 
 struct exp * yylval;
+struct symbol no_output_sym = {SYMBOL, "no output"};
 %}
 
 %%
@@ -59,13 +60,27 @@ struct exp * yylval;
 <<EOF>>	{ return PARSE_EOF; }
 %%
 
+static int is_no_output(struct exp *e) {
+	struct symbol *sym;
+	if (e && is_symbol(e)) {
+		sym = (struct symbole *)e;
+		if (sym == &no_output_sym)
+			return 1;
+	}
+	return 0;
+}
+
 void eval_print(struct exp *in, FILE *out, FILE *err, struct environ *env, int lineno) {
 	struct exp *result;
 	enum rtn_type r_type;
 	r_type = eval(in, &result, env);
 	if (r_type == SUCC) {
-		print(out, result);
-		fputc('\n', out);
+		if (is_no_output(result))
+			return;
+		else {
+			print(out, result);
+			fputc('\n', out);
+		}
 	} else {
 		error(err, "error in line %d:", lineno);
 		print(err, (struct exp *)in);
@@ -247,10 +262,12 @@ static int is_eof(struct exp *e) {
 		return 0;
 }
 
-void interpret(FILE *in, FILE *out, FILE *err, struct environ *base_env) {
+void interpret_file(FILE *in, FILE *out, FILE *err, struct environ *base_env) {
+	YY_BUFFER_STATE bp;
 	struct exp *e;
 	enum rtn_type r_type;
-	yyin = in;
+	bp = yy_create_buffer(in, YY_BUF_SIZE);
+	yy_switch_to_buffer(bp);
 	for (;;) {
 		r_type = u_read(NULL, &e);
 		if (r_type != SUCC) {
@@ -260,4 +277,5 @@ void interpret(FILE *in, FILE *out, FILE *err, struct environ *base_env) {
 			break;
 		eval_print(e, out, err, base_env, yylineno);
 	}
+	yy_delete_buffer(bp);
 }

@@ -446,7 +446,7 @@ enum rtn_type u_print(struct pair *args, struct exp **rtn) {
 		return r_type;
 
 	print(stdout, car(args));
-	*rtn = NULL;
+	*rtn = (struct exp *)&no_output_sym;
 	return SUCC;
 }
 
@@ -632,7 +632,7 @@ enum rtn_type define(struct pair *args, struct exp **rtn, struct environ *env) {
 			*rtn = (struct exp *)alloc_err_msg("could not define %s in env", ((struct symbol *)ar)->sym);
 			return ERR_ENV;
 		}
-		*rtn = NULL;
+		*rtn = (struct exp *)&no_output_sym;
 		return SUCC;
 	} else if (is_pair(ar)) {
 		/* (define (x y) y) */
@@ -662,7 +662,7 @@ enum rtn_type define(struct pair *args, struct exp **rtn, struct environ *env) {
 			*rtn = (struct exp *)alloc_err_msg("could not define %s in env", s->sym);
 			return ERR_ENV;
 		}
-		*rtn = NULL;
+		*rtn = (struct exp *)&no_output_sym;
 		return SUCC;
 	} else {
 		*rtn = (struct exp *)alloc_err_msg("structure is not proper");
@@ -695,7 +695,7 @@ enum rtn_type set(struct pair *args, struct exp **rtn, struct environ *env) {
 		*rtn = (struct exp *)alloc_err_msg("could not set %s in env", s->sym);
 		return ERR_ENV;
 	}
-	*rtn = NULL;
+	*rtn = (struct exp *)&no_output_sym;
 	return SUCC;
 }
 

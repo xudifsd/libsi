@@ -12,8 +12,8 @@ debug: t_tree t_stack t_main
 t_tree: t_tree.o $(objects)
 	gcc -o t_tree t_tree.o malloc.o tree.o $(LIB)
 
-t_stack: t_stack.o $(objects)
-	gcc -o t_stack t_stack.o $(objects) $(LIB)
+t_stack: t_stack.o interpret.o $(objects)
+	gcc -o t_stack t_stack.o interpret.o $(objects) $(LIB)
 
 t_main: t_main.o interpret.o $(objects)
 	gcc -o t_main t_main.o interpret.o $(objects) $(LIB)
