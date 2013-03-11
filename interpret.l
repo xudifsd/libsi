@@ -210,6 +210,10 @@ enum rtn_type u_read(struct pair *args, struct exp **rtn) {
 					*rtn = (struct exp *)alloc_err_msg("invalid use of `.'");
 					return ERR_PARSE_DOT;
 				}
+				if (!top) {
+					*rtn = (struct exp *)alloc_err_msg("invalid use of `.'");
+					return ERR_PARSE_DOT;
+				}
 				dot_list = 1;
 				break;
 			case PARSE_SYM: /* fall through */
@@ -267,6 +271,25 @@ void interpret_file(FILE *in, FILE *out, FILE *err, struct environ *base_env) {
 	struct exp *e;
 	enum rtn_type r_type;
 	bp = yy_create_buffer(in, YY_BUF_SIZE);
+	yy_switch_to_buffer(bp);
+	for (;;) {
+		r_type = u_read(NULL, &e);
+		if (r_type != SUCC) {
+			error(err, "error in line %d: %s\n", yylineno, ((struct symbol *)e)->sym);
+			continue;
+		} if (is_eof(e))
+			break;
+		eval_print(e, out, err, base_env, yylineno);
+	}
+	yy_delete_buffer(bp);
+}
+
+/* ATTENTION: last two bytes must be \0 */
+void interpret_string(char *buf, FILE *out, FILE *err, struct environ *base_env) {
+	YY_BUFFER_STATE bp;
+	struct exp *e;
+	enum rtn_type r_type;
+	bp = yy_scan_string(buf);
 	yy_switch_to_buffer(bp);
 	for (;;) {
 		r_type = u_read(NULL, &e);

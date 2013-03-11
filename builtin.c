@@ -446,6 +446,7 @@ enum rtn_type u_print(struct pair *args, struct exp **rtn) {
 		return r_type;
 
 	print(stdout, car(args));
+	printf("\n");
 	*rtn = (struct exp *)&no_output_sym;
 	return SUCC;
 }
