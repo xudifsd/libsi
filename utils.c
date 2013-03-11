@@ -66,12 +66,15 @@ enum rtn_type map(map_f fun, struct pair *args, struct pair **rtn) {
 		if (!is_pair(cdr(p)) && cdr(p) != NULL) {
 			*rtn = (struct pair *)alloc_err_msg("in map, args is not a list");
 			return ERR_TYPE;
-		} if ((r_type = fun(car(p), &e)) == SUCC) {
+		}
+		if ((r_type = fun(car(p), &e)) == SUCC) {
 			value = alloc_pair(e, NULL);
 			*tail = value;
 			tail = (struct pair **)&value->cdr;
-		} else
+		} else {
+			*rtn = (struct pair *)e;
 			return r_type;
+		}
 	}
 	*rtn = head;
 	return SUCC;

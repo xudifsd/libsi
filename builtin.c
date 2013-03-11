@@ -600,8 +600,10 @@ enum rtn_type u_if(struct pair *args, struct exp **rtn, struct environ *env) {
 		nr_args = 2;
 
 	r_type = eval(car(args), &predict, env);
-	if (r_type != SUCC)
+	if (r_type != SUCC) {
+		*rtn = (struct exp *)alloc_err_msg("could not eval prediction of if");
 		return r_type;
+	}
 
 	if (is_bool(predict) && ((struct bool *)predict)->value == 0) {
 		/* not true*/
@@ -705,6 +707,7 @@ enum rtn_type begin(struct pair *args, struct exp **rtn, struct environ *env) {
 	enum rtn_type r_type;
 	if ((r_type = eval_sequence(args, env, &result)) == SUCC)
 		return last_element(result, rtn);
+	*rtn = (struct exp *)alloc_err_msg("in begin parsing sequence");
 	return r_type;
 }
 
@@ -764,8 +767,10 @@ enum rtn_type defmacro(struct pair *args, struct exp **rtn, struct environ *env)
 	r_args = alloc_pair(body, NULL);
 	r_args = alloc_pair((struct exp *)pars, (struct exp *)r_args);
 
-	if ((r_type = wrapper_for_lambda_defmacro(r_args, &macro, env, 1)) != SUCC)
+	if ((r_type = wrapper_for_lambda_defmacro(r_args, &macro, env, 1)) != SUCC) {
+		*rtn = macro;
 		return r_type;
+	}
 	if (!is_callable(macro) || !is_macro((struct callable *)macro)) {
 		*rtn = (struct exp *)alloc_err_msg("internal bug: wrapper return wrong value");
 		return ERR_TYPE;
@@ -994,14 +999,22 @@ enum rtn_type eval(struct exp *e, struct exp **rtn, struct environ *env) {
 						return SUCC;
 					else
 						return type;
-				} else /* not implemented yet */
+				} else {
+					*rtn = (struct exp *)alloc_err_msg("unknow callable type");
 					return ERR_TYPE;
-			} else /* !is_callable(*rtn) */
+				}
+			} else { /* !is_callable(*rtn) */
+				*rtn = (struct exp *)alloc_err_msg("the first element of list is not callable");
 				return ERR_TYPE;
-		} else /* !(is_symbol(ar) || is_pair(ar)) */
+			}
+		} else { /* !(is_symbol(ar) || is_pair(ar)) */
+			*rtn = (struct exp *)alloc_err_msg("the first element of list is not callable");
 			return ERR_TYPE;
-	} else
+		}
+	} else {
+		*rtn = (struct exp *)alloc_err_msg("unknow expression type");
 		return ERR_TYPE;
+	}
 }
 
 enum rtn_type apply(struct pair *args, struct exp **rtn) {
@@ -1209,13 +1222,12 @@ enum rtn_type sub(struct pair *args, struct exp **rtn) {
 enum rtn_type u_sqrt(struct pair *args, struct exp **rtn) {
 	struct number *num;
 	double in;
-	struct exp *result;
 	enum rtn_type r_type;
 
-	if ((r_type = negative_p(args, &result)) != SUCC)
+	if ((r_type = negative_p(args, rtn)) != SUCC)
 		return r_type;
 	/* we do not support sqrt(-1) */
-	if (is_bool(result) && is_true((struct bool *)result)) {
+	if (is_bool(*rtn) && is_true((struct bool *)*rtn)) {
 		*rtn = (struct exp *)alloc_err_msg("could not sqrt negative number");
 		return ERR_MATH;
 	}

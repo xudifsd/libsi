@@ -82,7 +82,7 @@ void eval_print(struct exp *in, FILE *out, FILE *err, struct environ *env, int l
 			fputc('\n', out);
 		}
 	} else {
-		error(err, "error in line %d:", lineno);
+		error(err, "error in line %d: ", lineno);
 		print(err, (struct exp *)in);
 		fputc('\n', err);
 		if (is_symbol(result))
@@ -275,16 +275,19 @@ void interpret_file(FILE *in, FILE *out, FILE *err, struct environ *base_env) {
 	for (;;) {
 		r_type = u_read(NULL, &e);
 		if (r_type != SUCC) {
-			error(err, "error in line %d: %s\n", yylineno, ((struct symbol *)e)->sym);
-			continue;
-		} if (is_eof(e))
+			if (is_symbol(e)) {
+				error(err, "error in line %d: %s\n", yylineno, ((struct symbol *)e)->sym);
+				continue;
+			} else
+				fatal(err, "internal bug, e is not symbol");
+		}
+		if (is_eof(e))
 			break;
 		eval_print(e, out, err, base_env, yylineno);
 	}
 	yy_delete_buffer(bp);
 }
 
-/* ATTENTION: last two bytes must be \0 */
 void interpret_string(char *buf, FILE *out, FILE *err, struct environ *base_env) {
 	YY_BUFFER_STATE bp;
 	struct exp *e;
@@ -294,9 +297,13 @@ void interpret_string(char *buf, FILE *out, FILE *err, struct environ *base_env)
 	for (;;) {
 		r_type = u_read(NULL, &e);
 		if (r_type != SUCC) {
-			error(err, "error in line %d: %s\n", yylineno, ((struct symbol *)e)->sym);
-			continue;
-		} if (is_eof(e))
+			if (is_symbol(e)) {
+				error(err, "error in line %d: %s\n", yylineno, ((struct symbol *)e)->sym);
+				continue;
+			} else
+				fatal(err, "internal bug, e is not symbol");
+		}
+		if (is_eof(e))
 			break;
 		eval_print(e, out, err, base_env, yylineno);
 	}

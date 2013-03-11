@@ -5,6 +5,13 @@
      (fun (car lst))
      (map fun (cdr lst)))))
 
+(define (for-each fun lst)
+  (if (null? lst)
+    '()
+    (begin
+     (fun (car lst))
+     (for-each fun (cdr lst)))))
+
 (define (cadr lst)
   (car (cdr lst)))
 
