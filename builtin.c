@@ -912,3 +912,323 @@ enum rtn_type backquote(struct pair *args, struct exp **rtn, struct environ *env
 		*rtn = car(args);
 	return SUCC;
 }
+
+static struct environ *eval_map_base = NULL;
+static struct stack *top = NULL;
+/* *
+ * ATTENTIOM: eval_map is not a thread-safe function, it use eval_map_base to
+ * do the work.
+ */
+static enum rtn_type eval_map(struct exp *e, struct exp **rtn) {
+	return eval(e, rtn, eval_map_base);
+}
+
+enum rtn_type eval_sequence(struct pair *args, struct environ *env, struct pair **rtn) {
+	enum rtn_type r_type;
+	push_stack(&top);
+	top->env = eval_map_base;
+	eval_map_base = env;
+
+	r_type = map(eval_map, args, rtn);
+
+	eval_map_base = top->env;
+	pop_stack(&top);
+	return r_type;
+}
+
+/* *
+ * this function can not export to user space directly
+ */
+enum rtn_type eval(struct exp *e, struct exp **rtn, struct environ *env) {
+	enum rtn_type type;
+	if (e == NULL || is_number(e) || is_bool(e) || is_callable(e)) {
+		*rtn = e;
+		return SUCC;
+	} else if (is_symbol(e)) {
+		if (find_in_env(env, (struct symbol *)e, rtn))
+			return SUCC;
+		else {
+			*rtn = (struct exp *)alloc_err_msg("unbond symbol %s", ((struct symbol *)e)->sym);
+			return ERR_UNBOUND;
+		}
+	} else if (is_pair(e)) {
+		struct pair *p = (struct pair *)e;
+		struct exp *ar = car(p);
+		if (is_symbol(ar) || is_pair(ar)) {
+			type = eval(ar, rtn, env);
+			if (type != SUCC)
+				return type;
+
+			if (is_callable(*rtn)) {
+				struct exp *result;
+				struct callable *pro = (struct callable *)*rtn;
+
+				if (is_builtin_pro(pro) || is_lambda(pro) || is_macro(pro)) {
+					struct pair *args_for_apply;
+					if (!is_macro(pro)) {
+						if ((type = eval_sequence((struct pair *)cdr(p), env, (struct pair **)rtn)) != SUCC)
+							return type;
+					} else
+						*rtn = cdr(p);
+
+
+					args_for_apply = alloc_pair(*rtn, NULL);
+					args_for_apply = alloc_pair((struct exp *)pro, (struct exp *)args_for_apply);
+
+					type = apply(args_for_apply, &result);
+					if (type != SUCC) {
+						*rtn = result;
+						return type;
+					}
+
+					if (is_macro(pro))
+						return eval(result, rtn, env); /* FIXME is env right? */
+					else {
+						*rtn = result;
+						return type;
+					}
+
+				} else if (is_builtin_syntax(pro)) {
+					type = pro->bs_value((struct pair *)cdr(p), rtn, env);
+					if (type == SUCC)
+						return SUCC;
+					else
+						return type;
+				} else /* not implemented yet */
+					return ERR_TYPE;
+			} else /* !is_callable(*rtn) */
+				return ERR_TYPE;
+		} else /* !(is_symbol(ar) || is_pair(ar)) */
+			return ERR_TYPE;
+	} else
+		return ERR_TYPE;
+}
+
+enum rtn_type apply(struct pair *args, struct exp **rtn) {
+	struct environ *env;
+	struct callable *c;
+	struct exp *cadr;
+	struct pair *r_args;
+	enum rtn_type r_type;
+
+	if ((r_type = check_args(args, 2, 0, rtn)) != SUCC)
+		return r_type;
+
+	if (!is_callable(car(args)) || !is_pair(cdr(args))) {
+		*rtn = (struct exp *)alloc_symbol("not callable or wrong arg");
+		return ERR_TYPE;
+	}
+
+	cadr = car((struct pair *)cdr(args));
+	if (!is_pair(cadr) && cadr != NULL) { /* allow 0 args */
+		*rtn = (struct exp *)alloc_symbol("arg list is not a list");
+		return ERR_TYPE;
+	}
+
+	c = (struct callable *)car(args);
+	r_args = (struct pair *)cadr;
+
+	if (is_lambda(c) || is_macro(c)) {
+		env = extend_env(c->u_value.pars, r_args, c->u_value.bind);
+
+		if (eval_sequence(c->u_value.body, env, (struct pair **)rtn) != SUCC)
+			return ERR_USER_PRO;
+		return last_element((struct pair *)*rtn, rtn);
+	} else if (is_builtin_pro(c))
+		return c->bp_value(r_args, rtn);
+	else {
+		*rtn = (struct exp *)alloc_symbol("internel bug, unknow callable object");
+		return ERR_TYPE;
+	}
+}
+
+
+/* FIXME we should have code cope with overflow */
+
+/* helper function for add and mul, type 0 for add, 1 for mul */
+static struct number *construct_number(long l, double d, int type) {
+	struct number *rtn;
+	if (!type) {
+		if (d == 0)
+			rtn = alloc_long(l);
+		else {
+			d += l;
+			rtn = alloc_double(d);
+		}
+	} else {
+		if (d == 1)
+			rtn = alloc_long(l);
+		else {
+			d *= l;
+			rtn = alloc_double(d);
+		}
+	}
+	return rtn;
+}
+
+/* type 0 for add, 1 for mul */
+static enum rtn_type wrapper_for_add_mul(struct pair *args, struct exp **rtn, int type) {
+	long l_sum;
+	double d_sum;
+	struct pair *p;
+	struct number *num;
+	enum rtn_type r_type;
+
+	l_sum = d_sum = type? 1: 0;
+
+	if ((r_type = check_args(args, 1, 1, rtn)) != SUCC)
+		return r_type;
+
+	for_pair(p, args) {
+		if (!is_pair(cdr(p)) && cdr(p) != NULL) {
+			*rtn = (struct exp *)alloc_err_msg("args list is not a list");
+			return ERR_TYPE;
+		}
+		if (!is_number(p->car)) {
+			*rtn = (struct exp *)alloc_err_msg("args is not number");
+			return ERR_TYPE;
+		}
+		num = (struct number *)(p->car);
+
+		if (is_long(num)) {
+			if (type)
+				l_sum *= num->l_value;
+			else
+				l_sum += num->l_value;
+		} else if (is_double(num)) {
+			if (type)
+				d_sum *= num->d_value;
+			else
+				d_sum += num->d_value;
+		} else {
+			*rtn = (struct exp *)alloc_err_msg("internal bug, unknow number type");
+			return ERR_TYPE;
+		}
+	}
+	*rtn = (struct exp *)construct_number(l_sum, d_sum, type);
+	return SUCC;
+}
+
+enum rtn_type add(struct pair *args, struct exp **rtn) {
+	return wrapper_for_add_mul(args, rtn, 0);
+}
+
+enum rtn_type mul(struct pair *args, struct exp **rtn) {
+	return wrapper_for_add_mul(args, rtn, 1);
+}
+
+typedef double(*math_f)(double);
+
+static enum rtn_type wrapper_for_math_function(struct pair *args, struct exp **rtn, math_f fun) {
+	struct number *num;
+	double result;
+	struct exp *ar;
+	enum rtn_type r_type;
+
+	if ((r_type = check_args(args, 1, 0, rtn)) != SUCC)
+		return r_type;
+
+	ar = car(args);
+	if (is_number(ar)) {
+		num = (struct number *)ar;
+		if (is_long(num))
+			result = fun(num->l_value);
+		else
+			result = fun(num->d_value);
+		if (isnormal(result)) {
+			*rtn = (struct exp *)alloc_double(result);
+			return SUCC;
+		} else {
+			*rtn = (struct exp *)alloc_err_msg("underlay library return unnormal result");
+			return ERR_MATH;
+		}
+	} else {
+		*rtn = (struct exp *)alloc_err_msg("args is not number");
+		return ERR_TYPE;
+	}
+}
+
+enum rtn_type u_log(struct pair *args, struct exp **rtn) {
+	return wrapper_for_math_function(args, rtn, log);
+}
+
+enum rtn_type u_sin(struct pair *args, struct exp **rtn) {
+	return wrapper_for_math_function(args, rtn, sin);
+}
+
+enum rtn_type u_cos(struct pair *args, struct exp **rtn) {
+	return wrapper_for_math_function(args, rtn, cos);
+}
+
+enum rtn_type u_tan(struct pair *args, struct exp **rtn) {
+	return wrapper_for_math_function(args, rtn, tan);
+}
+
+enum rtn_type sub(struct pair *args, struct exp **rtn) {
+	double d = 0;
+	long l = 0;
+	int first = 1;
+	struct pair *p;
+	struct number *num;
+	enum rtn_type r_type;
+
+	if ((r_type = check_args(args, 1, 1, rtn)) != SUCC)
+		return r_type;
+
+	for_pair(p, args) {
+		if (!is_pair(cdr(p)) && cdr(p) != NULL) {
+			*rtn = (struct exp *)alloc_err_msg("args list is not a list");
+			return ERR_TYPE;
+		}
+		if (!is_number(car(p))) {
+			*rtn = (struct exp *)alloc_err_msg("args is not number");
+			return ERR_TYPE;
+		}
+		num = (struct number *)car(p);
+		if (is_long(num)) {
+			if (first) {
+				l = num->l_value;
+				first = 0;
+			} else
+				l -= num->l_value;
+		} else if (is_double(num)) {
+			if (first) {
+				d = num->d_value;
+				first = 0;
+			} else
+				d -= num->d_value;
+		} else {
+			*rtn = (struct exp *)alloc_err_msg("internal bug, unknow number type");
+			return ERR_TYPE;
+		}
+	}
+	*rtn = (struct exp *)construct_number(l, d, 0);
+	return SUCC;
+}
+
+enum rtn_type u_sqrt(struct pair *args, struct exp **rtn) {
+	struct number *num;
+	double in;
+	struct exp *result;
+	enum rtn_type r_type;
+
+	if ((r_type = negative_p(args, &result)) != SUCC)
+		return r_type;
+	/* we do not support sqrt(-1) */
+	if (is_bool(result) && is_true((struct bool *)result)) {
+		*rtn = (struct exp *)alloc_err_msg("could not sqrt negative number");
+		return ERR_MATH;
+	}
+
+	num = (struct number *)car(args);
+	if (is_long(num))
+		in = num->l_value;
+	else if (is_double(num))
+		in = num->d_value;
+	else {
+		*rtn = (struct exp *)alloc_err_msg("internal bug, unknow number type");
+		return ERR_TYPE;
+	}
+	*rtn = (struct exp *)alloc_double(sqrt(in));
+	return SUCC;
+}

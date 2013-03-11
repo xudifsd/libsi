@@ -1,10 +1,10 @@
-%option noyywrap yylineno nodefault
+%option noyywrap yylineno
 
 %{
 #include "interpret.h"
 #include "stack.h"
 #include "usage.h"
-#include "eval.h"
+#include "builtin.h"
 
 
 enum parse_type { PARSE_LB, PARSE_RB, PARSE_SYM, PARSE_LONG, PARSE_DOUBLE,

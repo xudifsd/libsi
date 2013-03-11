@@ -8,4 +8,4 @@
 #include "builtin.h"
 #include "usage.h"
 
-extern struct environ *setup_builtin();
+#include "u_setup.h"
