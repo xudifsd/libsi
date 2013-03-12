@@ -29,7 +29,7 @@ t_main.o: t_main.c $(header)
 
 
 libsi: interpret.o $(objects) $(header)
-	gcc -shared -fPIC -o libsi.so interpret.o $(objects)
+	gcc -shared -fPIC -o libsi.so interpret.o $(objects) $(LIB)
 
 interpret.o: interpret.c $(header)
 	gcc $(CFLAGS) interpret.c
