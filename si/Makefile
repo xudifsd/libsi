@@ -1,5 +1,5 @@
 
-LIB= -lreadline -lsi
+LIB= -lsi
 
 all: si
 

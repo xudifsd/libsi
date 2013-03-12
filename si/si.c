@@ -6,47 +6,56 @@
 #include <si/setup.h>
 #include <si/interpret.h>
 
-#include <readline/history.h>
-#include <readline/readline.h>
+#define BUF_SIZ 4096
 
-char buf[4096];
+char buf[BUF_SIZ];
 
-int cpy_block(char *dest, char *src) {
-	static int nest = 0; /* we use nest to determine if has list terminated */
-	for (; *src != '\0'; src++, dest++) {
+/* to check if buf has full list */
+int chk_block(char *src, int *offset) {
+	/* we use nest to determine if list has terminated */
+	static int nest = 0;
+	src += *offset;
+	for (; *src != '\0'; src++, (*offset)++) {
 		if (*src == '(')
 			nest++;
 		else if (*src == ')')
 			nest--;
-		*dest = *src;
 	}
-	*dest = ' '; /* 1 is for extra whitspace */
-	dest++;
-	*dest = '\0';
 	return nest;
 }
 
 int main(int argc, char *argv[]) {
 	struct environ *base;
-	char *read_buf;
 	int offset = 0;
+	FILE *in;
+
+	if (argc == 2) {
+		in = fopen(argv[1], "r");
+		if (!in) {
+			fprintf(stderr, "Couldn't open %s\n", argv[1]);
+			exit(1);
+		}
+	} else
+		in = stdin;
+
 	base = setup_builtin();
 
 	if (setup_basic(base)) {
 		fprintf(stderr, "error in setup_builtin\n");
 		exit(1);
 	}
-	for (;;) {
-		read_buf = readline(offset? "---> ": "si> ");
-		if (!read_buf)
-			break;
-		if (cpy_block(buf + offset, read_buf)) {
-			offset += strlen(read_buf) + 1; /* 1 is for extra whitspace */
-			continue;
-		} else
-			offset = 0;
-		interpret_string(buf, stdout, stderr, base);
-		free(read_buf);
-	}
+	if (in == stdin) {
+		for (;;) {
+			printf("%s ", offset? "--->": "si>");
+			if (!fgets(buf + offset, BUF_SIZ - 1, stdin))
+				break;
+			if (chk_block(buf, &offset))
+				continue;
+			else
+				offset = 0;
+			interpret_string(buf, stdout, stderr, base);
+		}
+	} else
+		interpret_file(in, stdout, stderr, base);
 	return 0;
 }

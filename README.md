@@ -3,8 +3,6 @@ libsi
 
 C library for interpret scheme
 
-Have a try
-=====
 
 ##install library
 
@@ -16,8 +14,10 @@ it also includes a tiny demo which is under `si` directory
 	$ make demo
 
 ##try demo
+because demo could not use libreadline itself(libreadline and libgc both use heap),
+so recommend you use following command:
 
-	$ cd si && ./si
+	$ cd si && rlwrap ./si
 
 In demo, you could try following function
 
@@ -28,4 +28,4 @@ Hope you enjoy it.
 Dependency
 =====
 
-The library itself requires `libgc` and `libm`, in addition the demo requires `libreadline`
+The library itself requires `libgc` and `libm`
