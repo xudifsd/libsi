@@ -270,6 +270,10 @@ void interpret_file(FILE *in, FILE *out, FILE *err, struct environ *base_env) {
 	YY_BUFFER_STATE bp;
 	struct exp *e;
 	enum rtn_type r_type;
+	FILE *null;
+	if (!(null = fopen("/dev/null", "w")))
+		fatal(err, "Could not open /dev/null");
+
 	bp = yy_create_buffer(in, YY_BUF_SIZE);
 	yy_switch_to_buffer(bp);
 	for (;;) {
@@ -283,7 +287,7 @@ void interpret_file(FILE *in, FILE *out, FILE *err, struct environ *base_env) {
 		}
 		if (is_eof(e))
 			break;
-		eval_print(e, out, err, base_env, yylineno);
+		eval_print(e, null, err, base_env, yylineno);
 	}
 	yy_delete_buffer(bp);
 }
