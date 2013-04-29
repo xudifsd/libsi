@@ -2,7 +2,7 @@
 prefix = /usr/local
 objects = malloc.o tree.o usage.o env.o stack.o utils.o builtin.o setup.o
 header = malloc.h tree.h usage.h env.h stack.h utils.h interpret.h builtin.h types.h setup.h
-CFLAGS = -c -g -Wall
+CFLAGS = -c -g -Wall -fPIC
 LIB = -lgc -lm
 
 all: libsi
