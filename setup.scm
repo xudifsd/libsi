@@ -41,3 +41,17 @@
     (if ,e1
       (and ,@rest)
       ,e1)))
+
+;; this function is not intended used as basic function, but it was need
+;; by ->> macro, and we don't support define function in macro body yet
+(define (list-if-not x)
+  (if (list? x)
+      x
+    (list x)))
+
+(defmacro (->> x #!rest form)
+  (if (null? form)
+      x
+    `(->> ,(append (list-if-not (car form))
+                   (list x))
+      ,@(cdr form))))
