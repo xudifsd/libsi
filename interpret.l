@@ -276,6 +276,7 @@ void interpret_file(FILE *in, FILE *out, FILE *err, struct environ *base_env) {
 
 	bp = yy_create_buffer(in, YY_BUF_SIZE);
 	yy_switch_to_buffer(bp);
+	yylineno = 1;
 	for (;;) {
 		r_type = u_read(NULL, &e);
 		if (r_type != SUCC) {
@@ -298,6 +299,7 @@ void interpret_string(char *buf, FILE *out, FILE *err, struct environ *base_env)
 	enum rtn_type r_type;
 	bp = yy_scan_string(buf);
 	yy_switch_to_buffer(bp);
+	yylineno = 1;
 	for (;;) {
 		r_type = u_read(NULL, &e);
 		if (r_type != SUCC) {

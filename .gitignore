@@ -15,3 +15,7 @@
 *.exe
 *.out
 *.app
+
+# For this project only
+interpret.c
+si/si
